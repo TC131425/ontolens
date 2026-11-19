@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OntoLens · Oberflächenentwurf</title>
+<style>
+:root{font-family:Inter,Segoe UI,Arial,sans-serif;color:#253437;background:#eef1f2;font-size:14px;--accent:#17676c;--line:#dce3e4;--muted:#6b797d}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button,a{touch-action:manipulation}button{cursor:pointer}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #c68b36;outline-offset:3px}button{border:1px solid var(--line);background:#fff;color:inherit;padding:9px 13px;border-radius:5px}button:hover{background:#edf4f4}button.active{background:#e0f0ee;color:#10585d;border-color:#afd3ce}.primary{background:var(--accent);color:white;border-color:var(--accent)}.primary:hover{background:#104e53}.icon{padding:8px 11px;font-size:18px}.concept-bar{background:#243337;color:white;display:flex;align-items:center;justify-content:space-between;gap:15px;padding:12px 24px}.concept-bar small{color:#bdd0d3}.segments{display:flex;gap:4px;background:#34464b;padding:4px;border-radius:6px}.segments button{background:transparent;border:0;color:#cfdddd}.segments button.active{background:white;color:#183d42}.app{margin:22px auto;max-width:1550px;min-height:calc(100vh - 112px);background:#fff;border:1px solid #d7dfe0;border-radius:8px;overflow:hidden;box-shadow:0 15px 50px #1c383b0b}.topbar{height:68px;padding:0 24px;display:flex;align-items:center;gap:28px;border-bottom:1px solid var(--line)}.brand{font-weight:750;font-size:22px;color:#145a60}.brand span{color:#a57537}.project-name{border-left:1px solid var(--line);padding-left:25px;line-height:1.5}.project-name small{display:block;color:var(--muted);font-size:11px}.topbar .right{margin-left:auto;display:flex;align-items:center;gap:14px}.local{color:var(--muted);font-size:12px}.local:before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#438f68;margin-right:7px}.shell{display:grid;grid-template-columns:205px minmax(0,1fr);min-height:690px}aside{background:#f8fafa;border-right:1px solid var(--line);padding:25px 14px;display:flex;flex-direction:column;gap:6px}.nav-label{font-size:10px;font-weight:700;color:#8b999c;margin:5px 12px 12px;text-transform:uppercase;letter-spacing:0}.nav{width:100%;border:0;background:transparent;text-align:left;padding:12px}.nav.active{font-weight:650}.nav b{float:right;color:var(--muted);font-size:12px}.side-bottom{margin-top:auto;padding:20px 10px;color:var(--muted);font-size:11px;line-height:1.8}main{padding:30px 36px;min-width:0}.crumb{color:var(--muted);font-size:12px;margin-bottom:15px}.heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:27px}h1{font-size:26px;margin:0 0 7px}h2{font-size:17px;margin:0}h3{font-size:14px;margin:0}.muted{color:var(--muted)}p{line-height:1.6}.summary{display:flex;gap:44px;border-bottom:1px solid var(--line);padding:0 0 25px;margin-bottom:24px}.summary strong{font-size:23px;display:block;margin-bottom:4px}.summary span{font-size:12px;color:var(--muted)}.tools{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px}.search{padding:10px 12px;border:1px solid var(--line);border-radius:5px;width:260px;max-width:100%;background:#fbfcfc}.count{font-size:12px;color:var(--muted)}table{border-collapse:collapse;width:100%;text-align:left}th{font-size:11px;color:#6e7d80;font-weight:550;padding:12px 14px;background:#f7f9f9}td{padding:20px 14px;border-bottom:1px solid var(--line);font-size:13px}td small{display:block;color:var(--muted);font-size:11px;margin-top:6px}td:first-child{font-weight:650}.row-link{border:0;padding:0;background:transparent;color:#175f65;font-weight:700;text-align:left}.status{font-size:11px;color:#276e4d;white-space:nowrap}.status.warn{color:#99651c}.status:before{content:'●';font-size:8px;margin-right:6px}.detail{margin-top:28px;border-top:1px solid var(--line);padding-top:22px}.detail-heading{display:flex;align-items:center;justify-content:space-between}.tabs{display:flex;gap:24px;border-bottom:1px solid var(--line);margin-top:18px;margin-bottom:22px}.tabs button{border:0;border-radius:0;background:none;padding:12px 0;color:var(--muted)}.tabs button.active{border-bottom:2px solid var(--accent);color:var(--accent)}.fields{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{display:flex;flex-direction:column;gap:8px;font-size:12px}.field input,.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:4px;background:#fbfcfc;color:#42565a;min-width:0}.checks{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:16px}.checks label{display:flex;align-items:center;gap:9px;font-size:12px}.checks input{accent-color:var(--accent);width:16px;height:16px}.detail-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:22px}.workbench{display:none}.editor-mode .management{display:none}.editor-mode .workbench{display:block}.editor-mode main{padding:0}.editor-mode aside{background:#f4f7f7}.workspace-title{padding:22px 24px 0}.filetabs{display:flex;background:#f5f8f8;border-bottom:1px solid var(--line);overflow:auto}.filetabs button{border:0;border-radius:0;padding:14px 20px;background:transparent;white-space:nowrap}.filetabs button.active{background:#fff;border-top:2px solid var(--accent);color:var(--accent)}.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);height:510px}.editor-pane{display:flex;flex-direction:column;min-width:0;border-right:1px solid var(--line)}.pane-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--line);font-size:11px;color:var(--muted)}textarea{resize:none;border:0;width:100%;flex:1;padding:22px;font-family:Consolas,monospace;font-size:13px;line-height:1.9;outline:none;color:#304d59;background:#fbfcfd;min-height:240px}.preview-pane{overflow:auto;min-width:0}.document{padding:25px}.document .eyebrow{font-size:10px;color:#8b693e;font-weight:700}.document h2{font-size:24px;margin:10px 0 15px;color:#155c63}.document p{font-size:12px;color:#607378}.document img{width:100%;height:190px;object-fit:contain;margin:10px 0}.document h3{color:#155c63;margin-top:23px}.term-tags{display:flex;gap:8px;flex-wrap:wrap}.term-tags a{font-size:11px;color:#155c63;border-bottom:1px solid #bfd7d5;padding:6px 0;text-decoration:none}.console{border-top:1px solid var(--line);background:#f6f8f9;padding:14px 22px;font-family:Consolas,monospace;font-size:11px;min-height:110px;line-height:1.9}.console strong{font-family:Segoe UI,sans-serif;font-size:11px}.console .ok{color:#26774e}.tree{display:none;padding:15px 10px;border-top:1px solid var(--line);margin-top:18px;font-size:12px;line-height:2.5}.tree button{display:block;border:0;background:transparent;padding:4px 8px;font-size:12px;width:100%;text-align:left}.tree button.active{background:#e0f0ee}.editor-mode .tree{display:block}.fullpage{display:none}.fullpage h2{margin:25px 0 10px}.build-list{border-top:1px solid var(--line);margin-top:25px}.build-item{padding:20px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:15px}.build-item small{display:block;color:var(--muted);margin-top:6px}.toast{position:fixed;bottom:25px;right:25px;background:#253c40;color:#fff;padding:15px 22px;border-radius:6px;box-shadow:0 5px 30px #0002;max-width:calc(100% - 40px);z-index:5}.hidden{display:none!important}dialog{border:1px solid var(--line);border-radius:8px;max-width:1100px;width:90vw;padding:0;max-height:90vh}dialog::backdrop{background:#172b37aa}dialog .pane-head{position:sticky;top:0;background:white}dialog .document{max-width:850px;margin:auto}dialog .document img{height:350px}.prototype-note{font-size:11px;color:#89979a;text-align:center;padding:8px}.workbench .tabs{margin:0;padding:0 22px}.editor-mode .fullpage{padding:30px 36px}a{color:var(--accent)}@media(max-width:1000px){.app{margin:10px}.shell{grid-template-columns:165px minmax(0,1fr)}main{padding:24px}.split{grid-template-columns:1fr;height:auto}.editor-pane{min-height:360px;border-bottom:1px solid var(--line)}.preview-pane{max-height:450px}.topbar{gap:15px}.project-name{padding-left:15px}.summary{gap:25px}.optional{display:none}}@media(max-width:650px){.concept-bar{flex-direction:column;align-items:stretch;padding:12px}.segments button{flex:1;font-size:12px}.app{margin:0;border-radius:0}.topbar{padding:12px;height:auto;flex-wrap:wrap}.project-name{display:none}.topbar .right{gap:6px}.shell{display:block}aside{padding:8px;flex-direction:row;overflow:auto;border-right:0;border-bottom:1px solid var(--line)}aside .nav{white-space:nowrap;width:auto}.nav-label,.side-bottom,.tree{display:none!important}main,.editor-mode .fullpage{padding:22px 15px}.heading{align-items:flex-start}h1{font-size:23px}.fields,.checks{grid-template-columns:1fr}.summary{gap:25px}.summary strong{font-size:20px}td,th{padding:14px 8px}td:nth-child(2),th:nth-child(2){display:none}.tabs{gap:15px}.tabs button{font-size:12px}.concept-bar small{display:none}}
+</style>
+</head>
+<body>
+<div class="concept-bar"><strong>OntoLens / Designstudie</strong><small>Stand 04 · Simulierte Generierung</small></div>
+<div class="app" id="app">
+<header class="topbar"><div class="brand">onto<span>lens</span></div><div class="project-name"><small>PROJEKT</small>Ontology Collection <span class="muted">⌄</span></div><div class="right"><span class="local">Lokal</span><button class="primary" onclick="build(true)">▶ Projekt bauen</button></div></header>
+<div class="shell">
+<aside><div class="nav-label">Arbeitsbereich</div><button class="nav active" data-view="ontologies">Ontologien <b>3</b></button><button class="nav" data-view="builds">Builds</button><button class="nav" data-view="portal">Portal</button><button class="nav" data-view="settings">Einstellungen</button><div class="tree"><div class="muted">EXAMPLES</div><button data-select="ISOProps" class="active">▾ isoprops</button><div style="padding-left:15px;color:#607378">isoprops.ttl<br>documentation.de.md<br>▸ figures</div><button data-select="LOIN">▸ loin</button><button data-select="TempO">▸ tempo</button></div><div class="side-bottom">ontolens.project.yaml<br>3 Ontologien · Deutsch</div></aside>
+<main>
+<div class="management" id="management"><div class="crumb">Ontology Collection / Ontologien</div><div class="heading"><div><h1>Ontologien</h1><span class="muted">LOIN, TempO und ISOProps</span></div><button onclick="notify('Im Entwurf sind die drei Beispielontologien hinterlegt.')">+ Hinzufügen</button></div><div class="summary"><div><strong>3</strong><span>Ontologien</span></div><div><strong>1</strong><span>Markdown-Dokument</span></div><div><strong style="color:#a26e27">1</strong><span>Offener Hinweis</span></div></div><div class="tools"><input class="search" id="search" placeholder="Ontologie suchen …" aria-label="Ontologie suchen"><span class="count">3 Einträge</span></div><table><thead><tr><th>Ontologie</th><th>Inhalt</th><th>Letzter Build</th><th></th></tr></thead><tbody id="ontology-rows"><tr data-name="ISOProps"><td><button class="row-link" data-select="ISOProps">ISOProps</button><small>isoprops.ttl</small></td><td>Markdown + Referenz</td><td><span class="status">Erfolgreich</span></td><td><button class="icon" title="ISOProps auswählen" aria-label="ISOProps auswählen" data-select="ISOProps">→</button></td></tr><tr data-name="LOIN"><td><button class="row-link" data-select="LOIN">LOIN</button><small>loin.ttl</small></td><td>Technische Referenz</td><td><span class="status">Erfolgreich</span></td><td><button class="icon" title="LOIN auswählen" aria-label="LOIN auswählen" data-select="LOIN">→</button></td></tr><tr data-name="TempO"><td><button class="row-link" data-select="TempO">TempO</button><small>tempo.ttl</small></td><td>Technische Referenz</td><td><span class="status warn">1 Hinweis</span></td><td><button class="icon" title="TempO auswählen" aria-label="TempO auswählen" data-select="TempO">→</button></td></tr></tbody></table><section class="detail"><div class="detail-heading"><h2 id="selected-title">ISOProps</h2><button onclick="openPreview()">Vorschau ↗</button></div><div class="tabs"><button class="active" data-detail="config">Konfiguration</button><button data-detail="checks">Prüfungen</button><button data-detail="result">Ergebnis</button></div><div id="detail-content"></div></section></div>
+<div class="workbench" id="workbench"><div class="filetabs"><button class="active" data-file="markdown">documentation.de.md</button><button data-file="yaml">ontolens.project.yaml</button></div><div class="split"><section class="editor-pane"><div class="pane-head"><span id="editor-label">ISOProps / Markdown</span><button onclick="notify('Änderungen bleiben nur in diesem Entwurf erhalten.')">Übernehmen</button></div><textarea id="editor" spellcheck="false" aria-label="Markdown-Entwurf"></textarea></section><section class="preview-pane"><div class="pane-head"><span>Vorschau · <span id="preview-name">ISOProps</span></span><button class="icon" onclick="openPreview()" title="Vorschau vergrößern" aria-label="Vorschau vergrößern">↗</button></div><div class="document" id="inline-preview"></div></section></div><div class="console" id="console"><strong>BUILD-AUSGABE</strong><br><span class="ok">✓ ISOProps · Dokumentation erzeugt</span><br><span class="ok">✓ LOIN · Dokumentation erzeugt</span><br><span style="color:#99651c">! TempO · LibraryOverview.svg fehlt</span></div></div>
+<div class="fullpage" id="other-view"></div>
+</main></div><div class="prototype-note">Interaktiver Entwurf · Beispieldaten · Keine Dateien werden geändert</div></div>
+<dialog id="preview-dialog"><div class="pane-head"><span>Dokumentationsvorschau</span><button class="icon" onclick="document.querySelector('dialog').close()" aria-label="Schließen" title="Schließen">×</button></div><div class="document" id="dialog-document"></div></dialog>
+<div class="toast hidden" id="toast" role="status"></div>
+<script>
+const data={ISOProps:{id:'isoprops',description:'Merkmale, Merkmalsgruppen und Datenkataloge. Ein gemeinsames Modell für die Beschreibung und den Austausch von Merkmalsinformationen.',terms:['Property','GroupOfProperties','Dictionary','AssignedProperty']},LOIN:{id:'loin',description:'Level of Information Need. Eine Dokumentation der Konzepte und Beziehungen für Informationsanforderungen.',terms:['Technische Referenz','Klassen','Objekt-Properties']},TempO:{id:'tempo',description:'Zeitbezogene Konzepte und Beziehungen. Technische Referenz und Dokumentation der Ontologie.',terms:['Technische Referenz','Klassen','Objekt-Properties']}};
+let selected='ISOProps',mode='management',view='ontologies',detail='config',file='markdown',timer;
+const markdown='# Einleitung\n\nDie ISOProps-Ontologie beschreibt Merkmale\nund ihre Beziehungen in Datenkatalogen.\n\n## Motivation\n\nMerkmalsinformationen sollen eindeutig\nidentifiziert und wiederverwendet werden.\n\n# Konzeptionelles Modell\n\n<!-- ontolens:visualization -->\n\n# Anwendung und Beispiele\n\n[[isoprops:Property|Merkmal]]\n\n<!-- ontolens:cross-reference -->';
+const yaml='name: ontology-collection\noutput: build\n\ndefaults:\n  language: de\n  quality_report: true\n\nontologies:\n  - id: isoprops\n    input: examples/isoprops/isoprops.ttl\n    content: examples/isoprops/documentation.de.md\n  - id: loin\n    input: examples/loin/loin.ttl\n  - id: tempo\n    input: examples/tempo/tempo.ttl\n\nportal:\n  enabled: true';
+function notify(message){clearTimeout(timer);const el=document.getElementById('toast');el.textContent=message;el.classList.remove('hidden');timer=setTimeout(()=>el.classList.add('hidden'),3500)}
+function preview(){const d=data[selected];return `<div class="eyebrow">ONTOLOGIE-DOKUMENTATION</div><h2>${selected}</h2><p>${d.description}</p><h3>Konzeptionelles Modell</h3>${selected==='ISOProps'?'<img src="../../examples/isoprops/figures/OntologyOverview.svg" alt="ISOProps-Modellübersicht">':'<p>Die Referenz enthält die Definitionen und Beziehungen der Ontologie.</p>'}<h3>Technische Referenz</h3><div class="term-tags">${d.terms.map(t=>`<a href="#" onclick="event.preventDefault();notify('Referenzeintrag: ${t}')">${t}</a>`).join('')}</div>`}
+function openPreview(){document.getElementById('dialog-document').innerHTML=preview();document.getElementById('preview-dialog').showModal()}
+function config(){let d=data[selected];return `<div class="fields"><label class="field">Quelldatei<input value="examples/${d.id}/${d.id}.ttl" readonly></label><label class="field">Markdown<input value="${selected==='ISOProps'?'documentation.de.md':''}" placeholder="Keine Datei zugeordnet" aria-label="Markdown-Datei"></label><label class="field">Sprache<select><option>Deutsch</option><option>English</option></select></label><label class="field">Parser<select><option>Automatisch erkennen</option><option>Turtle</option></select></label></div><div class="checks"><label><input type="checkbox" checked>Qualitätsbericht</label><label><input type="checkbox">Metadatenempfehlungen</label><label><input type="checkbox">Custom Annotations</label><label><input type="checkbox" ${selected==='ISOProps'?'checked':''}>Markdown prüfen</label></div><div class="detail-actions"><button onclick="notify('Einstellungen im Entwurf übernommen. Keine YAML-Datei geändert.')">Übernehmen</button><button class="primary" onclick="build(false)">▶ ${selected} bauen</button></div>`}
+function renderDetail(){document.getElementById('selected-title').textContent=selected;document.querySelectorAll('[data-detail]').forEach(b=>b.classList.toggle('active',b.dataset.detail===detail));document.getElementById('detail-content').innerHTML=detail==='config'?config():detail==='checks'?`<h3>${selected==='TempO'?'1 Hinweis':'Keine offenen Hinweise im Beispiel'}</h3><p class="muted">${selected==='TempO'?'Die referenzierte Grafik LibraryOverview.svg fehlt. Der Build überspringt sie gemäß Projektkonfiguration.':'Der letzte simulierte Build wurde erfolgreich abgeschlossen.'}</p>`:'<div class="build-item"><div><strong>Letzte Dokumentation</strong><small>Heute · Erfolgreich</small></div><button onclick="openPreview()">Vorschau öffnen ↗</button></div>'}
+function select(name){selected=name;renderDetail();document.getElementById('preview-name').textContent=name;document.getElementById('inline-preview').innerHTML=preview();document.getElementById('editor-label').textContent=name+' / '+(file==='markdown'?'Markdown':'Konfiguration');if(file==='markdown')document.getElementById('editor').value=name==='ISOProps'?markdown:'# '+name+'\n\n<!-- Noch kein Markdown zugeordnet. -->';document.querySelectorAll('.tree [data-select]').forEach(b=>b.classList.toggle('active',b.dataset.select===name))}
+function changeView(next){view=next;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.getElementById('management').style.display=view==='ontologies'&&mode==='management'?'block':'none';document.getElementById('workbench').style.display=view==='ontologies'&&mode==='editor'?'block':'none';const el=document.getElementById('other-view');el.style.display=view==='ontologies'?'none':'block';if(view==='builds')el.innerHTML='<div class="crumb">Ontology Collection / Builds</div><h1>Builds</h1><p class="muted">Letzte Ergebnisse</p><div class="build-list">'+['Projektbuild · 3 Ontologien','ISOProps · Einzeldokumentation'].map(t=>'<div class="build-item"><div><strong>'+t+'</strong><small>Heute · Beispieldaten</small></div><button onclick="openPreview()">Ergebnis ansehen ↗</button></div>').join('')+'</div>';if(view==='portal')el.innerHTML='<div class="crumb">Ontology Collection / Portal</div><div class="heading"><h1>Ontologieportal</h1><button class="primary" onclick="build(true)">▶ Portal bauen</button></div><label class="field">Titel<input value="LOIN, TempO & ISOProps"></label><h2>Enthaltene Ontologien</h2>'+Object.keys(data).map(n=>'<div class="build-item"><label><input type="checkbox" checked> '+n+'</label><span class="muted">'+data[n].id+'.ttl</span></div>').join('');if(view==='settings')el.innerHTML='<div class="crumb">Ontology Collection / Einstellungen</div><h1>Projekteinstellungen</h1><div class="fields" style="margin-top:25px"><label class="field">Projektname<input value="Ontology Collection"></label><label class="field">Ausgabeordner<input value="build/"></label><label class="field">Standardsprache<select><option>Deutsch</option><option>English</option></select></label></div><div class="detail-actions"><button class="primary" onclick="notify(\'Einstellungen im Entwurf übernommen.\')">Übernehmen</button></div>'}
+function build(all){notify('Build wird simuliert …');document.getElementById('console').innerHTML='<strong>BUILD-AUSGABE</strong><br>Dokumentation wird vorbereitet …';setTimeout(()=>{notify((all?'Projekt':selected)+' · Simulierter Build abgeschlossen');document.getElementById('console').innerHTML='<strong>BUILD-AUSGABE</strong><br><span class="ok">✓ '+(all?'3 Ontologien':selected)+' · Fertig</span><br>Keine Dateien geschrieben.'},1400)}
+document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;document.getElementById('app').classList.toggle('editor-mode',mode==='editor');document.querySelectorAll('[data-mode]').forEach(x=>x.classList.toggle('active',x===b));changeView(view)});
+document.querySelectorAll('[data-select]').forEach(b=>b.onclick=()=>select(b.dataset.select));document.querySelectorAll('[data-detail]').forEach(b=>b.onclick=()=>{detail=b.dataset.detail;renderDetail()});document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>changeView(b.dataset.view));document.querySelectorAll('[data-file]').forEach(b=>b.onclick=()=>{file=b.dataset.file;document.querySelectorAll('[data-file]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('editor').value=file==='yaml'?yaml:markdown;document.getElementById('editor-label').textContent=selected+' / '+(file==='yaml'?'Konfiguration':'Markdown')});document.getElementById('search').oninput=e=>{let count=0;document.querySelectorAll('#ontology-rows tr').forEach(row=>{const show=row.dataset.name.toLowerCase().includes(e.target.value.toLowerCase());row.hidden=!show;if(show)count++});document.querySelector('.count').textContent=count+' Einträge'};document.getElementById('editor').addEventListener('input',()=>{document.getElementById('editor-label').textContent=selected+' / Entwurf geändert'});select(selected);
+</script>
+<style>
+.steps{display:flex;gap:8px;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid var(--line);background:#fafcfc}.steps span{color:var(--muted);font-size:12px;padding:4px 10px}.steps .current{color:#155c63;font-weight:700;border-bottom:2px solid #155c63}.editor-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px}.editor-heading div{display:flex;gap:10px;align-items:center}.project-home .shell{grid-template-columns:1fr}.project-home aside,.project-home .topbar .right,.project-home .steps{display:none}.project-home main{max-width:1100px;width:100%;margin:auto;padding:45px 32px}.project-home .project-name{display:none}.project-entry{border-top:1px solid var(--line);padding:28px 0;display:flex;justify-content:space-between;align-items:center;gap:20px}.project-entry p{color:var(--muted);margin:8px 0}.flow-actions{display:flex;gap:10px;flex-wrap:wrap}.setup-row{padding:16px 0;border-bottom:1px solid var(--line)}.setup-row label{display:flex;align-items:center;gap:12px}.setup-row small{display:block;color:var(--muted);margin-left:27px;margin-top:6px}.build-summary{border-left:3px solid #4b946c;padding:14px 20px;background:#f2f8f4;margin:20px 0}.result-row{padding:18px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:15px;align-items:center}.result-row small{display:block;margin-top:6px;color:var(--muted)}.empty-state{padding:30px 0;color:var(--muted)}@media(max-width:650px){.editor-heading,.project-entry{align-items:flex-start;flex-direction:column}.editor-heading div{flex-wrap:wrap}.project-home main{padding:25px 16px}.steps{padding:12px}.steps span{padding:3px;font-size:11px}.result-row{flex-wrap:wrap}}
+</style>
+<script>
+// The same project state drives overview, editor and simulated build results.
+const originalSelect=select, originalChangeView=changeView, originalConfig=config;
+let projectTitle='Ontology Collection', activeNames=['ISOProps','LOIN','TempO'], hasProject=true, buildBusy=false, lastBuild=null;
+const drafts={ISOProps:markdown,LOIN:'# Einleitung\n\n',TempO:'# Einleitung\n\n'};
+const assigned=new Set(['ISOProps']);
+const escapeText=text=>String(text).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const app=document.getElementById('app');
+const steps=document.createElement('div');steps.className='steps';document.querySelector('.topbar').after(steps);
+function step(number){steps.innerHTML=['Projekt','Ontologien & Ausgabe','Textkapitel (optional)','Build & Ergebnis'].map((t,i)=>`<span class="${i===number?'current':''}">${i+1} · ${t}</span>`).join('')}
+function overview(){mode='management';app.classList.remove('editor-mode','project-home');changeView('ontologies');step(1);document.querySelector('.project-name').innerHTML='<small>PROJEKT</small>'+escapeText(projectTitle);document.querySelector('#management .crumb').textContent=projectTitle+' / Ontologien';document.querySelector('#management .heading .muted').textContent=activeNames.join(', ');document.querySelectorAll('#ontology-rows tr').forEach(row=>row.hidden=!activeNames.includes(row.dataset.name));document.querySelector('.count').textContent=activeNames.length+' Einträge';document.querySelectorAll('.summary strong')[0].textContent=activeNames.length;document.querySelectorAll('.summary strong')[1].textContent=activeNames.filter(n=>assigned.has(n)).length;document.querySelectorAll('.summary strong')[2].textContent=activeNames.includes('TempO')?1:0;document.querySelectorAll('.tree [data-select]').forEach(b=>b.hidden=!activeNames.includes(b.dataset.select));document.querySelector('.side-bottom').textContent=projectTitle+' · '+activeNames.length+' Ontologien';select(activeNames[0])}
+function home(){mode='management';app.classList.remove('editor-mode');app.classList.add('project-home');originalChangeView('home');const el=document.getElementById('other-view');el.innerHTML='<div class="crumb">Arbeitsbereich</div><div class="heading"><div><h1>Projekte</h1><span class="muted">Deine Ontologiedokumentationen</span></div><button class="primary" onclick="setup()">+ Neues Projekt</button></div><div class="project-entry"><div><h2>'+escapeText(projectTitle)+'</h2><p>'+activeNames.map(escapeText).join(' · ')+'</p><small class="muted">'+(hasProject?'Beispielprojekt · Konfiguration vorhanden':'Neu angelegt · Entwurf')+'</small></div><button class="primary" onclick="overview()">Projekt öffnen →</button></div>';step(0)}
+function setup(){app.classList.remove('project-home');originalChangeView('setup');step(0);document.getElementById('other-view').innerHTML='<div class="crumb">Projekte / Neues Projekt</div><h1>Projekt einrichten</h1><div class="fields" style="margin:25px 0"><label class="field">Projektname<input id="new-name" value="Meine Dissertation" maxlength="80"></label><label class="field">Ausgabeordner<input value="build/" readonly></label></div><h2>Ontologien auswählen</h2>'+Object.keys(data).map(n=>'<div class="setup-row"><label><input name="setup-ontology" type="checkbox" value="'+n+'" checked> '+n+'</label><small>examples/'+data[n].id+'/'+data[n].id+'.ttl</small></div>').join('')+'<div class="checks"><label><input type="checkbox" id="setup-portal" checked>Gemeinsames Portal erzeugen</label></div><div class="detail-actions"><button onclick="home()">Abbrechen</button><button class="primary" onclick="createProject()">Projekt anlegen →</button></div>'}
+let portalEnabled=true;
+function createProject(){const name=document.getElementById('new-name').value.trim();const names=Array.from(document.querySelectorAll('[name="setup-ontology"]:checked')).map(e=>e.value);if(!name||!names.length){notify('Bitte einen Namen und mindestens eine Ontologie auswählen.');return}projectTitle=name;activeNames=names;portalEnabled=document.getElementById('setup-portal').checked;hasProject=false;lastBuild=null;overview()}
+config=function(){return originalConfig()+'<div class="build-item"><div><strong>Eigene Textkapitel</strong><small>'+ (assigned.has(selected)?'Markdown zugeordnet':'Optional · bisher nur technische Referenz')+'</small></div><button onclick="editDocument()">'+(assigned.has(selected)?'Dokumentation bearbeiten →':'Vorlage erstellen & bearbeiten →')+'</button></div>'};
+select=function(name){originalSelect(name);document.getElementById('editor').value=file==='yaml'?yaml:drafts[name];document.querySelectorAll('[data-file="markdown"]').forEach(b=>b.textContent=assigned.has(name)?'documentation.de.md':'Neue Textkapitel');};
+function editDocument(){assigned.add(selected);file='markdown';mode='editor';app.classList.remove('project-home');app.classList.add('editor-mode');originalChangeView('ontologies');step(2);select(selected);document.getElementById('inline-preview').innerHTML=preview();document.querySelectorAll('[data-file]').forEach(b=>b.classList.toggle('active',b.dataset.file==='markdown'))}
+const editorHeading=document.createElement('div');editorHeading.className='editor-heading';editorHeading.innerHTML='<button onclick="overview()">← Zur Projektübersicht</button><div><button onclick="notify(\'Text im Entwurf übernommen.\')">Text übernehmen</button><button class="primary" onclick="build(false)">Dokumentation bauen →</button></div>';document.getElementById('workbench').prepend(editorHeading);
+changeView=function(next){if(next==='ontologies'){mode='management';app.classList.remove('editor-mode');step(1)}originalChangeView(next);if(next==='builds')renderBuilds();if(next==='portal'){document.getElementById('other-view').innerHTML='<div class="crumb">'+escapeText(projectTitle)+' / Ausgabe</div><h1>Ausgabe</h1><div class="setup-row"><label><input id="portal-enabled" type="checkbox" '+(portalEnabled?'checked':'')+' onchange="portalEnabled=this.checked">Zusätzlich ein gemeinsames Ontologieportal erzeugen</label></div><h2>Dokumentationen</h2>'+activeNames.map(n=>'<div class="build-item"><strong>'+n+'</strong><span class="muted">'+(assigned.has(n)?'Textkapitel + Referenz':'Technische Referenz')+'</span></div>').join('')+'<div class="detail-actions"><button onclick="overview()">← Ontologien</button><button class="primary" onclick="build(true)">Projekt bauen →</button></div>';step(1)}};
+function renderBuilds(){step(3);const el=document.getElementById('other-view');if(!lastBuild){el.innerHTML='<h1>Builds</h1><p class="empty-state">Noch kein Build in dieser Sitzung.</p><button class="primary" onclick="build(true)">Projekt bauen →</button>';return}el.innerHTML='<div class="crumb">'+escapeText(lastBuild.project)+' / Ergebnisse</div><div class="heading"><h1>'+ (lastBuild.busy?'Dokumentation wird erzeugt …':'Build abgeschlossen')+'</h1><button onclick="overview()">← Projektübersicht</button></div><div class="build-summary" role="status">'+(lastBuild.busy?'Build läuft · '+lastBuild.names.length+' Ontologie(n)':'✓ '+lastBuild.names.length+' Dokumentation(en) erzeugt · Simulation')+'</div>'+(!lastBuild.busy?lastBuild.names.map(n=>'<div class="result-row"><div><strong>'+n+'</strong><small>'+ (n==='TempO'?'Hinweis: LibraryOverview.svg fehlt':'Erfolgreich')+'</small></div><button onclick="select(\''+n+'\');openPreview()">Dokumentation ansehen ↗</button></div>').join('')+(lastBuild.portal?'<div class="result-row"><div><strong>Gemeinsames Portal</strong><small>'+lastBuild.names.join(' · ')+'</small></div><button onclick="portalPreview()">Portal ansehen ↗</button></div>':''):'')}
+function portalPreview(){document.getElementById('dialog-document').innerHTML='<h2>'+escapeText(lastBuild.project)+'</h2>'+lastBuild.names.map(n=>'<div class="result-row"><div><h3>'+n+'</h3><p>'+data[n].description+'</p></div><button onclick="select(\''+n+'\');document.getElementById(\'dialog-document\').innerHTML=preview()">Öffnen →</button></div>').join('');document.getElementById('preview-dialog').showModal()}
+build=function(all){if(buildBusy){notify('Ein simulierter Build läuft bereits.');return}buildBusy=true;lastBuild={project:projectTitle,names:all?[...activeNames]:[selected],portal:all&&portalEnabled,busy:true};mode='management';app.classList.remove('editor-mode','project-home');changeView('builds');setTimeout(()=>{lastBuild.busy=false;buildBusy=false;if(view==='builds')renderBuilds();notify('Build abgeschlossen · Ergebnisse verfügbar.')},1200)};
+document.getElementById('editor').addEventListener('input',()=>{if(file==='markdown')drafts[selected]=document.getElementById('editor').value});
+document.querySelectorAll('[data-file]').forEach(b=>b.onclick=()=>{file=b.dataset.file;document.querySelectorAll('[data-file]').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('editor').value=file==='yaml'?yaml:drafts[selected]});
+document.querySelector('[data-view="portal"]').textContent='Ausgabe & Portal';
+const projectsButton=document.createElement('button');projectsButton.className='nav';projectsButton.textContent='← Alle Projekte';projectsButton.onclick=home;document.querySelector('aside').prepend(projectsButton);
+document.querySelector('#management .heading > button').onclick=setup;
+document.querySelector('#management .heading > button').textContent='Projekt einrichten';
+document.getElementById('search').oninput=e=>{let count=0;document.querySelectorAll('#ontology-rows tr').forEach(row=>{const show=activeNames.includes(row.dataset.name)&&row.dataset.name.toLowerCase().includes(e.target.value.toLowerCase());row.hidden=!show;if(show)count++});document.querySelector('.count').textContent=count+' Einträge'};
+home();
+</script>
+<style>
+.detail{scroll-margin-top:18px}.detail .tabs{overflow-x:auto;white-space:nowrap}.detail .tabs button{flex-shrink:0}.inline-edit{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);border:1px solid var(--line);border-radius:5px;overflow:hidden}.inline-edit section{min-width:0}.inline-edit section:first-child{border-right:1px solid var(--line)}.inline-edit textarea{height:380px;display:block;min-height:260px}.inline-preview{padding:18px 22px;height:380px;overflow:auto;background:white;overflow-wrap:anywhere}.inline-preview h2{margin:10px 0 16px;color:#155c63}.inline-preview h3{margin:20px 0 10px}.inline-preview p{white-space:pre-wrap;font-size:13px}.inline-status{font-size:12px;color:#6b797d}.document-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}.document-toolbar label{display:flex;align-items:center;gap:8px;font-size:12px}.inline-edit.preview-off{grid-template-columns:minmax(0,1fr)}.inline-edit.preview-off section:first-child{border:0}.inline-edit.preview-off section:last-child{display:none}#ontology-rows tr.selected{background:#eef7f5}#ontology-rows tr.selected td:first-child{box-shadow:inset 3px 0 #17676c}.detail-heading .selected-context{font-size:11px;color:var(--muted);display:block;margin-bottom:5px}.inline-build{margin-top:16px;border-left:3px solid #438f68;padding:12px 16px;background:#f2f8f4;font-size:13px}.inline-preview code{display:block;background:#f4f6f7;padding:12px;white-space:pre-wrap;font-size:12px}.preview-slot{padding:10px 0;color:#718185;border-bottom:1px dashed #dce3e4;font-size:12px}@media(max-width:850px){.inline-edit{grid-template-columns:minmax(0,1fr)}.inline-edit section:first-child{border-right:0;border-bottom:1px solid var(--line)}.inline-edit textarea,.inline-preview{height:300px}.document-toolbar{align-items:flex-start;flex-wrap:wrap}}
+</style>
+<script>
+// Keep editing and individual builds inside the selected ontology's detail panel.
+const oldRenderDetail=renderDetail, oldSelectInline=select, projectBuild=build;
+const tabs=document.querySelector('.detail .tabs');
+tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Ontologieansichten');
+tabs.innerHTML=[['config','Einstellungen'],['text','Textkapitel'],['checks','Prüfungen'],['result','Ergebnis']].map(([id,label])=>`<button id="tab-${id}" role="tab" aria-controls="detail-content" data-detail="${id}">${label}</button>`).join('');
+document.getElementById('detail-content').setAttribute('role','tabpanel');
+tabs.querySelectorAll('button').forEach((button,index)=>{button.onclick=()=>{detail=button.dataset.detail;renderDetail()};button.onkeydown=e=>{const buttons=[...tabs.querySelectorAll('button')];let target;if(e.key==='ArrowRight')target=(index+1)%buttons.length;if(e.key==='ArrowLeft')target=(index+buttons.length-1)%buttons.length;if(e.key==='Home')target=0;if(e.key==='End')target=buttons.length-1;if(target!==undefined){e.preventDefault();buttons[target].click();buttons[target].focus()}}});
+document.querySelector('[data-file="yaml"]').remove();
+const savedDrafts={...drafts}, inlineResults={};
+let showTextPreview=true;
+config=function(){return originalConfig()};
+editDocument=function(){detail='text';renderDetail()};
+function renderTextPreview(){const target=document.getElementById('text-preview');if(!target)return;target.replaceChildren();let code=false,buffer=[];const append=(tag,text)=>{const el=document.createElement(tag);el.textContent=text;target.append(el)};for(const line of drafts[selected].split('\n')){if(line.startsWith('```')){if(code){append('code',buffer.join('\n'));buffer=[]}code=!code;continue}if(code){buffer.push(line);continue}if(line.trim().startsWith('<!--')){const slot=line.match(/ontolens:([a-z-]+)/);if(slot){const el=document.createElement('div');el.className='preview-slot';el.textContent=slot[1]==='cross-reference'?'Technische Referenz':slot[1]==='visualization'?'Ontologiegraph':slot[1];target.append(el)}continue}if(line.startsWith('# '))append('h2',line.slice(2));else if(line.startsWith('## '))append('h3',line.slice(3));else if(line.trim())append('p',line)}if(code)append('code',buffer.join('\n'))}
+function saveText(){savedDrafts[selected]=drafts[selected];document.getElementById('text-state').textContent='Im Entwurf übernommen';notify('Text übernommen · nur für diese Sitzung.')}
+renderDetail=function(){
+ document.querySelectorAll('#ontology-rows tr').forEach(row=>row.classList.toggle('selected',row.dataset.name===selected));
+ document.getElementById('selected-title').textContent=selected;
+ tabs.querySelectorAll('button').forEach(b=>{const active=b.dataset.detail===detail;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});
+ const panel=document.getElementById('detail-content');panel.setAttribute('aria-labelledby','tab-'+detail);
+ if(detail!=='text'){oldRenderDetail();if(detail==='result'&&inlineResults[selected])panel.innerHTML='<div class="inline-build">'+escapeText(inlineResults[selected])+'</div><div class="detail-actions"><button onclick="openPreview()">Dokumentation ansehen ↗</button></div>';return}
+ if(!assigned.has(selected)){panel.innerHTML='<div class="empty-state"><h3>Keine Textkapitel zugeordnet</h3><p>'+selected+' wird derzeit als technische Referenz erzeugt.</p><button onclick="assigned.add(selected);renderDetail()">Markdown-Vorlage anlegen</button></div>';return}
+ panel.innerHTML='<div class="document-toolbar"><span class="inline-status">documentation.de.md</span><label><input id="show-text-preview" type="checkbox" '+(showTextPreview?'checked':'')+'>Textvorschau</label></div><div class="inline-edit '+(showTextPreview?'':'preview-off')+'"><section><div class="pane-head">Markdown</div><textarea id="inline-markdown" spellcheck="false" aria-label="Textkapitel von '+selected+'"></textarea></section><section><div class="pane-head">Textvorschau</div><div class="inline-preview" id="text-preview"></div></section></div><div class="detail-actions"><span id="text-state" class="inline-status" style="margin-right:auto;align-self:center">'+(drafts[selected]===savedDrafts[selected]?'Keine offenen Änderungen':'Nicht übernommen')+'</span><button onclick="saveText()">Text übernehmen</button><button class="primary" onclick="build(false)">Dokumentation bauen</button></div><div id="inline-build-status" role="status"></div>';
+ const editor=document.getElementById('inline-markdown');editor.value=drafts[selected];editor.oninput=()=>{drafts[selected]=editor.value;document.getElementById('text-state').textContent='Nicht übernommen';renderTextPreview()};document.getElementById('show-text-preview').onchange=e=>{showTextPreview=e.target.checked;document.querySelector('.inline-edit').classList.toggle('preview-off',!showTextPreview)};renderTextPreview();
+};
+select=function(name){oldSelectInline(name);renderDetail()};
+build=function(all){if(all){projectBuild(true);return}if(buildBusy){notify('Ein Build läuft bereits.');return}buildBusy=true;const name=selected;inlineResults[name]='Dokumentation wird erzeugt …';const status=document.getElementById('inline-build-status');if(status){status.className='inline-build';status.textContent=inlineResults[name]}else notify(inlineResults[name]);setTimeout(()=>{buildBusy=false;inlineResults[name]='Build abgeschlossen · Simulation';lastBuild={project:projectTitle,names:[name],portal:false,busy:false};if(selected===name){const target=document.getElementById('inline-build-status');if(target){target.className='inline-build';target.innerHTML='Build abgeschlossen · <button onclick="detail=\'result\';renderDetail()">Ergebnis ansehen →</button>'}else if(detail==='result')renderDetail()}notify(name+' · Ergebnis verfügbar.')},1200)};
+const context=document.createElement('span');context.className='selected-context';context.textContent='AUSGEWÄHLTE ONTOLOGIE';document.getElementById('selected-title').before(context);
+document.querySelector('#management .heading > button').textContent='Projekt einrichten';
+// Open the relevant view directly for this design review; project navigation remains available.
+overview();detail='text';renderDetail();
+</script>
+<script>
+// Output settings belong to the project; completed outputs have their own view.
+steps.remove();
+step=function(){};
+document.querySelector('[data-view="portal"]').remove();
+document.querySelector('[data-view="builds"]').textContent='Ergebnisse';
+document.querySelector('[data-view="settings"]').textContent='Projekteinstellungen';
+document.querySelector('.topbar .primary').textContent='▶ Projekt generieren';
+const beforeNavigationSimplification=changeView;
+let outputFolder='build/', projectLanguage='Deutsch';
+changeView=function(next){
+ beforeNavigationSimplification(next);
+ if(next==='settings'){
+  const el=document.getElementById('other-view');
+  el.innerHTML='<div class="crumb">'+escapeText(projectTitle)+' / Projekteinstellungen</div><h1>Projekteinstellungen</h1><div class="fields" style="margin-top:25px"><label class="field">Projektname<input id="project-title-setting" maxlength="80"></label><label class="field">Ausgabeordner<input id="output-folder-setting"></label><label class="field">Standardsprache<select id="project-language-setting"><option>Deutsch</option><option>English</option></select></label></div><h2 style="margin-top:32px">Veröffentlichung</h2><div class="setup-row"><label><input type="checkbox" id="project-portal-setting">Gemeinsames Portal erzeugen</label><small>Zusätzliche Übersichtsseite mit Links zu den einzelnen Ontologiedokumentationen.</small></div><div class="detail-actions"><button class="primary" onclick="saveProjectSettings()">Einstellungen übernehmen</button></div>';
+  document.getElementById('project-title-setting').value=projectTitle;
+  document.getElementById('output-folder-setting').value=outputFolder;
+  document.getElementById('project-language-setting').value=projectLanguage;
+  document.getElementById('project-portal-setting').checked=portalEnabled;
+ }
+};
+function saveProjectSettings(){
+ const name=document.getElementById('project-title-setting').value.trim();
+ const folder=document.getElementById('output-folder-setting').value.trim();
+ if(!name||!folder){notify('Bitte Projektname und Ausgabeordner angeben.');return}
+ projectTitle=name;outputFolder=folder;projectLanguage=document.getElementById('project-language-setting').value;
+ portalEnabled=document.getElementById('project-portal-setting').checked;
+ document.querySelector('.project-name').innerHTML='<small>PROJEKT</small>'+escapeText(projectTitle);
+ notify('Projekteinstellungen im Entwurf übernommen.');
+}
+renderBuilds=function(){
+ const el=document.getElementById('other-view');
+ let html='<div class="crumb">'+escapeText(projectTitle)+' / Ergebnisse</div><div class="heading"><div><h1>Ergebnisse</h1><span class="muted">Dokumentationen und Portale</span></div><button class="primary" onclick="build(true)">▶ Projekt generieren</button></div>';
+ if(!lastBuild){el.innerHTML=html+'<div class="empty-state">Noch keine Ergebnisse in dieser Sitzung.</div>';return}
+ html+='<div class="build-summary" role="status">'+(lastBuild.busy?'Generierung läuft …':'✓ Generierung abgeschlossen · Simulation')+'</div>';
+ if(!lastBuild.busy){
+  html+='<h2>Einzeldokumentationen</h2>';
+  html+=lastBuild.names.map(n=>'<div class="result-row"><div><strong>'+n+'</strong><small>HTML-Dokumentation'+(n==='TempO'?' · Hinweis: LibraryOverview.svg fehlt':'')+'</small></div><button onclick="select(\''+n+'\');openPreview()">Dokumentation öffnen ↗</button></div>').join('');
+  if(lastBuild.portal)html+='<h2 style="margin-top:30px">Gemeinsames Portal</h2><div class="result-row"><div><strong>'+escapeText(lastBuild.project)+'</strong><small>Übersichtsseite · '+lastBuild.names.join(', ')+'</small></div><button onclick="portalPreview()">Portal öffnen ↗</button></div>';
+ }
+ el.innerHTML=html;
+};
+document.querySelector('#management .heading > button').textContent='Projekteinstellungen';
+document.querySelector('#management .heading > button').onclick=()=>changeView('settings');
+overview();detail='config';renderDetail();
+</script>
+<style>
+html[data-theme="dark"]{color-scheme:dark;--accent:#78c8c4;--line:#394247;--muted:#a3b1b5;color:#e1e8e9;background:#171b1e}
+html[data-theme="dark"] body{background:#171b1e;color:#e1e8e9}
+html[data-theme="dark"] .app{background:#22282c;border-color:var(--line);box-shadow:0 15px 50px #0003}
+html[data-theme="dark"] .concept-bar{background:#111619}
+html[data-theme="dark"] .topbar{background:#20262a}
+html[data-theme="dark"] aside,html[data-theme="dark"] .editor-mode aside{background:#1c2226}
+html[data-theme="dark"] button{background:#2c353a;color:#e1e8e9;border-color:#465257}
+html[data-theme="dark"] button:hover{background:#39484d}
+html[data-theme="dark"] button.active,html[data-theme="dark"] .nav.active{background:#2a4547;color:#9dddd8;border-color:#557c7e}
+html[data-theme="dark"] .primary{background:#377c80;color:#fff;border-color:#55979b}
+html[data-theme="dark"] .primary:hover{background:#448b8e}
+html[data-theme="dark"] .nav,html[data-theme="dark"] .row-link,html[data-theme="dark"] .tabs button{background:transparent}
+html[data-theme="dark"] .brand,html[data-theme="dark"] .row-link,html[data-theme="dark"] .document h2,html[data-theme="dark"] .document h3,html[data-theme="dark"] .inline-preview h2,html[data-theme="dark"] .term-tags a{color:#8dd5d1}
+html[data-theme="dark"] .brand span,html[data-theme="dark"] .document .eyebrow{color:#e0b979}
+html[data-theme="dark"] .field input,html[data-theme="dark"] .field select,html[data-theme="dark"] .search,html[data-theme="dark"] textarea{background:#1a2125;color:#d8e6e9;border-color:#465257}
+html[data-theme="dark"] input::placeholder{color:#8b9ba1}
+html[data-theme="dark"] th,html[data-theme="dark"] .filetabs,html[data-theme="dark"] .console{background:#1c2428;color:#b0c0c4}
+html[data-theme="dark"] #ontology-rows tr.selected{background:#263b3d}
+html[data-theme="dark"] #ontology-rows tr.selected td:first-child{box-shadow:inset 3px 0 #78c8c4}
+html[data-theme="dark"] .pane-head,html[data-theme="dark"] dialog .pane-head{background:#283136;color:#b8c9cd}
+html[data-theme="dark"] .inline-preview,html[data-theme="dark"] dialog{background:#222a2e;color:#e1e8e9}
+html[data-theme="dark"] .inline-preview code{background:#172024;color:#bfdce1}
+html[data-theme="dark"] .document p{color:#b6c8cd}
+html[data-theme="dark"] .document img{background:#f8fafb;border-radius:4px;padding:10px}
+html[data-theme="dark"] .build-summary,html[data-theme="dark"] .inline-build{background:#263b33;color:#cae6d6;border-color:#80bc98}
+html[data-theme="dark"] .status,html[data-theme="dark"] .console .ok{color:#9ed4b1}
+html[data-theme="dark"] .status.warn{color:#e6bc79}
+html[data-theme="dark"] .tabs button.active{color:#92d7d3;border-color:#78c8c4}
+html[data-theme="dark"] .toast{background:#d4e6e6;color:#173539}
+html[data-theme="dark"] [style*="color:#a26e27"],html[data-theme="dark"] [style*="color:#99651c"]{color:#e6bc79!important}
+html[data-theme="dark"] .preview-slot{color:#a8babf;border-color:var(--line)}
+.theme-button{font-size:12px;white-space:nowrap;margin-left:auto}
+</style>
+<script>
+const themeButton=document.createElement('button');
+themeButton.type='button';themeButton.className='theme-button';
+document.querySelector('.concept-bar').append(themeButton);
+function setTheme(theme){
+ document.documentElement.dataset.theme=theme;
+ themeButton.textContent=theme==='dark'?'☀ Heller Modus':'☾ Dunkler Modus';
+ themeButton.setAttribute('aria-label',theme==='dark'?'Hellen Modus aktivieren':'Dunklen Modus aktivieren');
+ themeButton.title=themeButton.getAttribute('aria-label');
+ try{localStorage.setItem('ontolens-design-theme',theme)}catch{}
+}
+themeButton.onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+let initialTheme='dark';
+try{initialTheme=localStorage.getItem('ontolens-design-theme')||'dark'}catch{}
+setTheme(initialTheme==='light'?'light':'dark');
+</script>
+<style>
+.template-options{padding:22px;max-width:680px}.template-options select{padding:10px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit;width:100%;margin:8px 0 14px}.template-options ol{padding-left:22px;line-height:1.9}.template-options p{color:var(--muted);font-size:13px}.template-options label{font-size:13px}.template-options .replace-confirm{display:flex;gap:10px;align-items:flex-start;margin:20px 0}.template-options .detail-actions{flex-wrap:wrap}button:disabled{opacity:.45;cursor:not-allowed}.template-inline{padding:0;max-width:650px}
+</style>
+<dialog id="template-dialog" aria-labelledby="template-heading"><div class="pane-head"><strong id="template-heading">Markdown-Vorlage</strong><button class="icon" onclick="document.getElementById('template-dialog').close()" aria-label="Schließen">×</button></div><div id="template-dialog-content" class="template-options"></div></dialog>
+<script>
+const templateChapters=[
+ ['introduction','Einleitung','Zweck, Motivation und Zielgruppe beschreiben.'],
+ ['scope','Umfang und Anforderungen','Abdeckung, Grenzen, Anwendungsfälle und Competency Questions ergänzen.'],
+ ['conceptual-model','Konzeptionelles Modell','Zentrale Konzepte und Beziehungen erklären.'],
+ ['design-decisions','Modellierungsentscheidungen','Patterns, Alternativen, Wissensquellen und Entwicklungsmethode dokumentieren.'],
+ ['usage','Anwendung und Beispiele','Ein geprüftes Turtle-Beispiel und typische Abläufe ergänzen.'],
+ ['interoperability','Wiederverwendung und Interoperabilität','Imports, Mappings und Erweiterungsmöglichkeiten erklären.'],
+ ['validation','Validierung und Grenzen','Prüfverfahren, Ergebnisse und bekannte Grenzen dokumentieren.'],
+ ['maintenance','Versionierung und Pflege','Versionierung, Kompatibilität, Deprecation und Zuständigkeiten beschreiben.'],
+ ['references','Literatur und Quellen','Normen, Publikationen und weitere Quellen nennen.']
+];
+const compactChapterKeys=new Set(['introduction','scope','conceptual-model','usage']);
+function chaptersFor(profile){return templateChapters.filter(c=>profile==='standard'||compactChapterKeys.has(c[0]))}
+function templateBody(profile,name){
+ const parts=['---\nlanguage: de\ntitle: '+JSON.stringify(name)+'\nprofile: '+profile+'\n---','<!-- ontolens:metadata -->'];
+ const chapter=c=>'<!-- ontolens:chapter '+c[0]+' -->\n# '+c[1]+'\n\n<!-- '+c[2]+' -->';
+ for(const c of chaptersFor(profile)){
+  if(c[0]==='references')continue;
+  parts.push(chapter(c));
+  if(c[0]==='conceptual-model')parts.push('<!-- ontolens:visualization -->','<!-- ontolens:figures -->');
+  if(c[0]==='interoperability')parts.push('<!-- ontolens:used-ontologies -->');
+  if(c[0]==='validation')parts.push('<!-- ontolens:quality-report -->');
+ }
+ if(profile==='compact')parts.push('<!-- ontolens:used-ontologies -->','<!-- ontolens:quality-report -->');
+ parts.push('<!-- ontolens:downloads -->','<!-- ontolens:prefixes -->','<!-- ontolens:overview -->','<!-- ontolens:cross-reference -->');
+ if(profile==='standard')parts.push(chapter(templateChapters[8]));
+ return parts.join('\n\n')+'\n';
+}
+function templateOptions(container,replace){
+ container.innerHTML='<label>Vorlagentyp<select class="profile-select"><option value="standard">Standard · 9 Textkapitel</option><option value="compact">Kompakt · 4 Textkapitel</option></select></label><ol class="chapter-list"></ol><p>Beide Vorlagen enthalten zusätzlich die automatisch erzeugte technische Referenz, Metadaten und weitere Ausgabeabschnitte.</p>'+(replace?'<label class="replace-confirm"><input class="replace-check" type="checkbox">Vorhandenen Text von '+escapeText(selected)+' durch die neue Vorlage ersetzen.</label>':'')+'<div class="detail-actions">'+(replace?'<button onclick="document.getElementById(\'template-dialog\').close()">Abbrechen</button>':'')+'<button class="primary create-template" '+(replace?'disabled':'')+'>'+(replace?'Text ersetzen':'Vorlage erstellen')+'</button></div>';
+ const selector=container.querySelector('select');
+ const update=()=>container.querySelector('.chapter-list').innerHTML=chaptersFor(selector.value).map(c=>'<li>'+c[1]+'</li>').join('');
+ selector.onchange=update;update();
+ const confirm=container.querySelector('.replace-check');
+ const create=container.querySelector('.create-template');
+ if(confirm)confirm.onchange=()=>create.disabled=!confirm.checked;
+ create.onclick=()=>{if(confirm&&!confirm.checked)return;drafts[selected]=templateBody(selector.value,selected);assigned.add(selected);document.getElementById('template-dialog').close();detail='text';renderDetail();notify((selector.value==='standard'?'Standardvorlage':'Kompakte Vorlage')+' für '+selected+' erstellt · nur im Entwurf.')};
+}
+function chooseTemplate(){templateOptions(document.getElementById('template-dialog-content'),true);document.getElementById('template-dialog').showModal()}
+const renderBeforeTemplates=renderDetail;
+renderDetail=function(){
+ renderBeforeTemplates();
+ if(detail!=='text')return;
+ if(!assigned.has(selected)){
+  const panel=document.getElementById('detail-content');panel.innerHTML='<h3>Markdown-Vorlage für '+selected+'</h3><div class="template-options template-inline" id="inline-template-options"></div>';
+  templateOptions(document.getElementById('inline-template-options'),false);
+ }else{
+  const button=document.createElement('button');button.textContent='Neue Vorlage …';button.onclick=chooseTemplate;document.querySelector('.document-toolbar').append(button);
+ }
+};
+// Hide frontmatter in the simplified text preview, as in the actual generator.
+const previewBeforeTemplates=renderTextPreview;
+renderTextPreview=function(){const original=drafts[selected];try{drafts[selected]=original.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,'');previewBeforeTemplates()}finally{drafts[selected]=original}};
+detail='text';renderDetail();
+</script>
+<style>
+.persistent-workspace{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,.85fr);gap:0;padding:0;align-items:start}
+.workspace-left{padding:26px;min-width:0}.workspace-right{border-left:1px solid var(--line);background:#eef2f3;position:sticky;top:0;height:calc(100vh - 90px);min-height:480px;display:flex;flex-direction:column;min-width:0}
+.preview-controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);background:#f8fafa;flex-wrap:wrap}
+.preview-controls select{max-width:100%;padding:7px;background:transparent;color:inherit;border:1px solid var(--line);border-radius:4px}.preview-controls label{display:flex;gap:8px;align-items:center;font-size:12px}
+.preview-scroll{overflow:auto;flex:1;padding:22px}.preview-paper{background:white;min-height:90%;padding:28px;box-shadow:0 4px 20px #0001;overflow-wrap:anywhere}.preview-paper h2{color:#155c63;margin:20px 0 12px}.preview-paper h3{margin:24px 0 12px}.preview-paper p{white-space:pre-wrap;font-size:13px}.preview-paper img{max-width:100%;height:auto}.preview-meta{font-size:11px;color:var(--muted);padding:10px 18px;border-top:1px solid var(--line)}
+.persistent-workspace .inline-edit{grid-template-columns:minmax(0,1fr)}.persistent-workspace .inline-edit section:last-child,.persistent-workspace .document-toolbar label{display:none}.persistent-workspace .inline-edit section:first-child{border:0}.persistent-workspace .inline-edit textarea{height:480px}
+.persistent-workspace .summary{gap:20px}.persistent-workspace td,.persistent-workspace th{padding:13px 9px}.persistent-workspace td:nth-child(2),.persistent-workspace th:nth-child(2){display:none}.persistent-workspace .fields{grid-template-columns:minmax(0,1fr)}.persistent-workspace .detail-actions{flex-wrap:wrap}.project-home .persistent-workspace{display:block;padding:0}.project-home .workspace-right{display:none}.project-home .workspace-left{padding:26px}.preview-paper pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f0f4f5;padding:12px}
+html[data-theme="dark"] .workspace-right{background:#171e22}html[data-theme="dark"] .preview-controls{background:#20292d}html[data-theme="dark"] .preview-paper{background:#263035;color:#dce6e9}html[data-theme="dark"] .preview-paper h2{color:#91d4ce}html[data-theme="dark"] .preview-paper pre{background:#192327}
+@media(max-width:1150px){.persistent-workspace{grid-template-columns:minmax(0,1fr) minmax(300px,.85fr)}.workspace-left{padding:18px}.preview-scroll{padding:12px}.preview-paper{padding:18px}.persistent-workspace .checks{grid-template-columns:1fr}.shell{grid-template-columns:165px minmax(0,1fr)}}
+@media(max-width:850px){.persistent-workspace{display:block}.workspace-right{position:static;height:550px;border-left:0;border-top:1px solid var(--line)}.shell{display:block}.persistent-workspace .inline-edit textarea{height:300px}}
+</style>
+<script>
+const mainWorkspace=document.querySelector('main');
+const leftWorkspace=document.createElement('div');leftWorkspace.className='workspace-left';
+while(mainWorkspace.firstChild)leftWorkspace.append(mainWorkspace.firstChild);
+mainWorkspace.append(leftWorkspace);mainWorkspace.classList.add('persistent-workspace');
+const rightWorkspace=document.createElement('section');rightWorkspace.className='workspace-right';rightWorkspace.setAttribute('aria-label','Dokumentationsvorschau');
+rightWorkspace.innerHTML='<div class="preview-controls"><strong id="persistent-preview-title">ISOProps</strong><select id="preview-source" aria-label="Vorschaustand"><option value="draft">Aktueller Entwurf</option><option value="generated">Letztes Ergebnis</option></select><label><input id="auto-preview" type="checkbox" checked>Automatisch</label><button class="icon" id="refresh-preview" title="Vorschau aktualisieren" aria-label="Vorschau aktualisieren">↻</button></div><div class="preview-scroll"><article class="preview-paper" id="persistent-document"></article></div><div class="preview-meta" id="persistent-preview-status" role="status">Vereinfachte Textvorschau · keine echte HTML-Generierung</div>';
+mainWorkspace.append(rightWorkspace);
+const generatedPreviews={};let updatePreviewTimer;
+function draftDocument(name){
+ const text=drafts[name].replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/,'');
+ if(!assigned.has(name))return '<h2>'+escapeText(name)+'</h2><p>'+escapeText(data[name].description)+'</p><h3>Technische Referenz</h3>'+data[name].terms.map(t=>'<p>'+escapeText(t)+'</p>').join('');
+ let html='<small class="muted">'+escapeText(name)+' · Dokumentation</small>',code=false;
+ for(const line of text.split('\n')){
+  if(line.startsWith('```')){html+=code?'</code></pre>':'<pre><code>';code=!code;continue}
+  if(code){html+=escapeText(line)+'\n';continue}
+  if(line.trim().startsWith('<!--')){
+   if(line.includes('ontolens:visualization')&&name==='ISOProps')html+='<img src="../../examples/isoprops/figures/OntologyOverview.svg" alt="ISOProps-Modellübersicht">';
+   else if(line.includes('ontolens:cross-reference'))html+='<h3>Technische Referenz</h3>'+data[name].terms.map(t=>'<p>'+escapeText(t)+'</p>').join('');
+   continue;
+  }
+  if(line.startsWith('# '))html+='<h2>'+escapeText(line.slice(2))+'</h2>';
+  else if(line.startsWith('## '))html+='<h3>'+escapeText(line.slice(3))+'</h3>';
+  else if(line.trim())html+='<p>'+escapeText(line)+'</p>';
+ }
+ return html+(code?'</code></pre>':'');
+}
+function refreshPersistentPreview(){
+ const generated=document.getElementById('preview-source').value==='generated';
+ document.getElementById('persistent-preview-title').textContent=selected;
+ document.getElementById('persistent-document').innerHTML=generated?(generatedPreviews[selected]||'<h2>Noch kein Ergebnis</h2><p>Für diese Ontologie wurde in dieser Sitzung noch keine Dokumentation erzeugt.</p>'):draftDocument(selected);
+ document.getElementById('persistent-preview-status').textContent=generated?'Letzter simulierter Stand · unabhängig von weiteren Textänderungen':'Aktueller Entwurf · vereinfachte Textvorschau';
+}
+document.getElementById('preview-source').onchange=refreshPersistentPreview;
+document.getElementById('refresh-preview').onclick=refreshPersistentPreview;
+document.getElementById('auto-preview').onchange=e=>{if(e.target.checked)refreshPersistentPreview()};
+mainWorkspace.addEventListener('input',e=>{if(e.target.id!=='inline-markdown')return;clearTimeout(updatePreviewTimer);if(document.getElementById('auto-preview').checked&&document.getElementById('preview-source').value==='draft')updatePreviewTimer=setTimeout(refreshPersistentPreview,250)});
+const selectBeforePersistent=select, renderBeforePersistent=renderDetail;
+select=function(name){selectBeforePersistent(name);refreshPersistentPreview()};
+renderDetail=function(){renderBeforePersistent();if(document.getElementById('auto-preview').checked)refreshPersistentPreview()};
+openPreview=function(){document.getElementById('preview-source').value=generatedPreviews[selected]?'generated':'draft';refreshPersistentPreview()};
+build=function(all){
+ if(buildBusy){notify('Eine Generierung läuft bereits.');return}
+ buildBusy=true;const names=all?[...activeNames]:[selected];const snapshots=Object.fromEntries(names.map(n=>[n,draftDocument(n)]));
+ lastBuild={project:projectTitle,names,portal:all&&portalEnabled,busy:true};
+ document.getElementById('persistent-preview-status').textContent='Generierung läuft …';
+ if(view==='builds')renderBuilds();
+ setTimeout(()=>{Object.assign(generatedPreviews,snapshots);names.forEach(n=>inlineResults[n]='Generierung abgeschlossen · Simulation');buildBusy=false;lastBuild.busy=false;document.getElementById('preview-source').value='generated';refreshPersistentPreview();if(view==='builds')renderBuilds();notify('Ergebnis rechts aktualisiert · Simulation.')},1200);
+};
+portalPreview=function(){document.getElementById('persistent-preview-title').textContent='Gemeinsames Portal';document.getElementById('persistent-document').innerHTML='<h2>'+escapeText(lastBuild.project)+'</h2>'+lastBuild.names.map(n=>'<div class="result-row"><strong>'+n+'</strong><button onclick="select(\''+n+'\');openPreview()">Öffnen →</button></div>').join('');document.getElementById('persistent-preview-status').textContent='Portal · simulierter Stand'};
+document.querySelector('.detail-heading > button').textContent='Ergebnis anzeigen →';
+document.querySelector('.concept-bar small').textContent='Stand 06 · Editor und Vorschau · Simulierte Generierung';
+detail='text';renderDetail();refreshPersistentPreview();
+</script>
+<style>
+.preview-format-tabs{display:flex;gap:22px;padding:0 18px;background:#f8fafa;border-bottom:1px solid var(--line)}.preview-format-tabs button{border:0;border-bottom:2px solid transparent;background:transparent;border-radius:0;padding:12px 0}.preview-format-tabs button.active{background:transparent;border-bottom-color:var(--accent);color:var(--accent)}
+.live-markdown-block{padding:7px 10px;min-height:32px;margin:5px 0;border:1px solid transparent;border-radius:4px;cursor:text;overflow-wrap:anywhere;white-space:pre-wrap;line-height:1.7}.live-markdown-block:hover{background:#f2f6f6}.live-markdown-block:focus{outline:none;border-color:#75a8a8;background:#f1f7f7;font-family:Consolas,monospace;font-size:13px;white-space:pre-wrap}.live-markdown-block h2,.live-markdown-block h3{margin:2px 0!important}.live-markdown-block p{margin:0}.live-markdown-block pre{margin:0}.live-markdown-block ul,.live-markdown-block ol{margin:0;padding-left:22px}.live-markdown-block code{font-family:Consolas,monospace;background:#edf2f2;padding:2px 4px;border-radius:3px}.live-markdown-block .md-marker{color:var(--muted);font-size:12px;font-family:Consolas,monospace}.live-markdown-block .md-meta{font-size:11px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:10px}.markdown-add{margin:12px 10px;font-size:12px}.markdown-live .preview-paper{padding:18px}.markdown-live .preview-paper h1{font-size:23px}.markdown-live .preview-paper h2{font-size:21px}.markdown-live .preview-paper h3{font-size:17px}
+html[data-theme="dark"] .preview-format-tabs{background:#20292d}html[data-theme="dark"] .live-markdown-block:hover{background:#2d393e}html[data-theme="dark"] .live-markdown-block:focus{background:#1d2c31;border-color:#609894}html[data-theme="dark"] .live-markdown-block code{background:#19272b}
+</style>
+<script>
+let previewFormat='html', liveBlocks=[];
+const formatTabs=document.createElement('div');formatTabs.className='preview-format-tabs';formatTabs.setAttribute('role','tablist');formatTabs.setAttribute('aria-label','Vorschauformat');
+formatTabs.innerHTML='<button id="format-html" role="tab" aria-controls="persistent-document" aria-selected="true" class="active">HTML</button><button id="format-markdown" role="tab" aria-controls="persistent-document" aria-selected="false" tabindex="-1">Markdown</button>';
+document.querySelector('.preview-controls').before(formatTabs);
+const refreshBeforeMarkdown=refreshPersistentPreview;
+function inlineMarkdown(text){return escapeText(text).replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*]+)\*/g,'<em>$1</em>').replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,'<span style="color:var(--accent)">$2</span>')}
+function formattedBlock(raw){
+ if(raw.startsWith('---\n'))return '<div class="md-meta">'+escapeText(raw.replace(/^---\n|\n---$/g,''))+'</div>';
+ if(raw.trim().startsWith('<!--'))return '<div class="md-marker">'+escapeText(raw)+'</div>';
+ if(raw.startsWith('```'))return '<pre><code>'+escapeText(raw.replace(/^```[^\n]*\n?/,'').replace(/\n?```$/,''))+'</code></pre>';
+ const heading=raw.match(/^(#{1,6}) (.*)$/s);if(heading){const level=Math.min(heading[1].length+1,6);return '<h'+level+'>'+inlineMarkdown(heading[2])+'</h'+level+'>'}
+ const lines=raw.split('\n');if(lines.every(l=>/^[-*] /.test(l)))return '<ul>'+lines.map(l=>'<li>'+inlineMarkdown(l.slice(2))+'</li>').join('')+'</ul>';
+ if(lines.every(l=>/^\d+\. /.test(l)))return '<ol>'+lines.map(l=>'<li>'+inlineMarkdown(l.replace(/^\d+\. /,''))+'</li>').join('')+'</ol>';
+ return '<p>'+inlineMarkdown(raw)+'</p>';
+}
+function commitLiveBlock(index,element){liveBlocks[index]=element.innerText.replace(/\r\n/g,'\n');drafts[selected]=liveBlocks.join('\n\n');const leftEditor=document.getElementById('inline-markdown');if(leftEditor)leftEditor.value=drafts[selected];const state=document.getElementById('text-state');if(state)state.textContent='Nicht übernommen';document.getElementById('persistent-preview-status').textContent='Markdown · Änderungen im Sitzungsentwurf';}
+function renderLiveMarkdown(){
+ const target=document.getElementById('persistent-document');target.replaceChildren();document.getElementById('persistent-preview-title').textContent=selected;
+ if(!assigned.has(selected)){target.innerHTML='<h2>Keine Markdown-Datei</h2><p>Für '+escapeText(selected)+' sind noch keine Textkapitel zugeordnet.</p><button onclick="detail=\'text\';renderDetail()">Vorlage auswählen</button>';return}
+ // Preserve complete fenced code blocks and frontmatter while splitting prose paragraphs.
+ const lines=drafts[selected].split('\n');liveBlocks=[];let buffer=[],fence=false,frontmatter=lines[0]==='---';
+ lines.forEach((line,index)=>{if(line.startsWith('```'))fence=!fence;if(frontmatter&&index>0&&line==='---'){buffer.push(line);liveBlocks.push(buffer.join('\n'));buffer=[];frontmatter=false;return}if(!line.trim()&&!fence&&!frontmatter){if(buffer.length){liveBlocks.push(buffer.join('\n'));buffer=[]}}else buffer.push(line)});if(buffer.length)liveBlocks.push(buffer.join('\n'));if(!liveBlocks.length)liveBlocks=[''];
+ liveBlocks.forEach((raw,index)=>{const block=document.createElement('div');block.className='live-markdown-block';block.contentEditable='true';block.setAttribute('role','textbox');block.setAttribute('aria-label','Markdown-Abschnitt '+(index+1));block.setAttribute('aria-multiline','true');block.spellcheck=false;block.innerHTML=formattedBlock(raw);block.onfocus=()=>{block.textContent=liveBlocks[index]};block.oninput=()=>commitLiveBlock(index,block);block.onblur=()=>{commitLiveBlock(index,block);block.innerHTML=formattedBlock(liveBlocks[index])};block.onpaste=e=>{e.preventDefault();const text=e.clipboardData.getData('text/plain');const selection=window.getSelection();if(selection.rangeCount){const range=selection.getRangeAt(0);range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);selection.removeAllRanges();selection.addRange(range);commitLiveBlock(index,block)}};target.append(block)});
+ const add=document.createElement('button');add.className='markdown-add';add.textContent='+ Absatz';add.onclick=()=>{drafts[selected]+='\n\nNeuer Absatz';renderLiveMarkdown();const blocks=target.querySelectorAll('.live-markdown-block');blocks[blocks.length-1].focus()};target.append(add);
+ document.getElementById('persistent-preview-status').textContent='Markdown · Live-Bearbeitung · Sitzungsentwurf';
+}
+refreshPersistentPreview=function(){if(previewFormat==='markdown')renderLiveMarkdown();else refreshBeforeMarkdown()};
+function setPreviewFormat(format){
+ if(document.activeElement?.classList.contains('live-markdown-block'))document.activeElement.blur();
+ previewFormat=format;rightWorkspace.classList.toggle('markdown-live',format==='markdown');
+ formatTabs.querySelectorAll('button').forEach(b=>{const active=b.id==='format-'+format;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});
+ document.getElementById('preview-source').hidden=format==='markdown';document.getElementById('auto-preview').closest('label').hidden=format==='markdown';document.getElementById('refresh-preview').hidden=format==='markdown';refreshPersistentPreview();
+}
+formatTabs.querySelectorAll('button').forEach(b=>{b.onclick=()=>setPreviewFormat(b.id==='format-html'?'html':'markdown');b.onkeydown=e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();setPreviewFormat(e.key==='Home'?'html':e.key==='End'?'markdown':previewFormat==='html'?'markdown':'html');document.getElementById('format-'+previewFormat).focus()}}});
+const openBeforeMarkdown=openPreview;openPreview=function(){setPreviewFormat('html');openBeforeMarkdown()};
+const portalBeforeMarkdown=portalPreview;portalPreview=function(){setPreviewFormat('html');portalBeforeMarkdown()};
+document.querySelector('.concept-bar small').textContent='Stand 07 · HTML & Markdown · Simulierte Generierung';
+setPreviewFormat('markdown');
+</script>
+<style>
+.output-choice{margin:18px 0;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.output-choice label{font-size:12px;font-weight:650;display:block;margin-bottom:9px}.output-choice select{width:100%;padding:10px;border:1px solid var(--line);border-radius:4px;background:#fbfcfc;color:inherit}.output-choice p{font-size:12px;color:var(--muted);margin:8px 0 0}.output-choice small{display:block;color:var(--muted);margin-top:9px}html[data-theme="dark"] .output-choice select{background:#1a2125;border-color:#465257}
+</style>
+<script>
+const outputTypes={ISOProps:'combined',LOIN:'reference',TempO:'reference'};
+const outputLabels={reference:'HTML · Technische Referenz',combined:'HTML · Referenz mit Textkapiteln',markdown:'Markdown · Textdokument'};
+const outputDescriptions={reference:'Klassen, Properties, Metadaten und Graph. Markdown-Textkapitel werden nicht eingebunden.',combined:'Technische Referenz und eigene Textkapitel in einer HTML-Seite.',markdown:'Markdown-Datei zum Weiterbearbeiten oder Exportieren. Es wird keine HTML-Dokumentation erzeugt.'};
+const choice=document.createElement('div');choice.className='output-choice';
+choice.innerHTML='<label for="ontology-output-type">Ausgabe für diese Ontologie</label><select id="ontology-output-type"><option value="reference">HTML · Technische Referenz</option><option value="combined">HTML · Referenz mit Textkapiteln</option><option value="markdown">Markdown · Textdokument</option></select><p id="output-explanation"></p><small id="output-readiness"></small>';
+document.querySelector('.detail .tabs').before(choice);
+function updateOutputChoice(){const type=outputTypes[selected];document.getElementById('ontology-output-type').value=type;document.getElementById('output-explanation').textContent=outputDescriptions[type];document.getElementById('output-readiness').textContent=type!=='reference'&&!assigned.has(selected)?'Noch keine Textkapitel: im Tab Textkapitel eine Vorlage anlegen.':type==='reference'&&assigned.has(selected)?'Vorhandene Textkapitel bleiben erhalten und werden für diese Ausgabe nicht verwendet.':''}
+document.getElementById('ontology-output-type').onchange=e=>{outputTypes[selected]=e.target.value;updateOutputChoice();document.getElementById('preview-source').value='draft';setPreviewFormat(e.target.value==='markdown'?'markdown':'html')};
+const detailBeforeOutput=renderDetail;renderDetail=function(){updateOutputChoice();detailBeforeOutput()};
+const draftBeforeOutput=draftDocument;
+function referenceDocument(name){return '<small class="muted">Technische Referenz</small><h2>'+escapeText(name)+'</h2><p>'+escapeText(data[name].description)+'</p>'+(name==='ISOProps'?'<img src="../../examples/isoprops/figures/OntologyOverview.svg" alt="ISOProps-Modellübersicht">':'')+'<h3>Klassen und Properties</h3>'+data[name].terms.map(t=>'<div class="result-row"><strong>'+escapeText(t)+'</strong></div>').join('')}
+draftDocument=function(name){if(outputTypes[name]==='reference')return referenceDocument(name);if(outputTypes[name]==='markdown')return '<h2>Markdown-Ausgabe</h2><p>Für diese Auswahl wird keine HTML-Dokumentation erzeugt.</p><button onclick="setPreviewFormat(\'markdown\')">Markdown öffnen</button>';return draftBeforeOutput(name)};
+const selectedBeforeOutput=select;select=function(name){selectedBeforeOutput(name);updateOutputChoice()};
+const artifacts={};
+build=function(all){
+ if(buildBusy){notify('Eine Generierung läuft bereits.');return}
+ const names=all?[...activeNames]:[selected];
+ const missing=names.filter(n=>outputTypes[n]!=='reference'&&!assigned.has(n));
+ if(missing.length){select(missing[0]);detail='text';renderDetail();notify('Für '+missing.join(', ')+' bitte zuerst eine Markdown-Vorlage anlegen.');return}
+ const captures=Object.fromEntries(names.map(n=>[n,{type:outputTypes[n],markdown:drafts[n],html:draftDocument(n)}]));
+ const htmlNames=names.filter(n=>outputTypes[n]!=='markdown');
+ buildBusy=true;lastBuild={project:projectTitle,names,portal:all&&portalEnabled&&htmlNames.length>0,htmlNames,captures,busy:true};
+ document.getElementById('persistent-preview-status').textContent='Ausgaben werden erzeugt …';if(view==='builds')renderBuilds();
+ setTimeout(()=>{Object.assign(artifacts,captures);names.forEach(n=>{generatedPreviews[n]=captures[n].html;inlineResults[n]=outputLabels[captures[n].type]+' · Simulation'});lastBuild.busy=false;buildBusy=false;document.getElementById('preview-source').value='generated';setPreviewFormat(captures[selected]?.type==='markdown'?'markdown':'html');if(view==='builds')renderBuilds();notify('Ausgaben erstellt · '+names.map(n=>n+': '+(captures[n].type==='markdown'?'.md':'.html')).join(' · '))},1200)
+};
+function openArtifact(name){select(name);const item=artifacts[name];if(!item)return;if(item.type==='markdown'){setPreviewFormat('markdown');document.getElementById('persistent-preview-status').textContent='Bearbeitbarer Markdown-Entwurf · Export über Ergebnisse'}else{document.getElementById('preview-source').value='generated';setPreviewFormat('html')}}
+function downloadMarkdown(name){const item=artifacts[name];if(!item)return;const url=URL.createObjectURL(new Blob([item.markdown],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=data[name].id+'-documentation.de.md';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+const resultsBeforeOutput=renderBuilds;
+renderBuilds=function(){if(!lastBuild||lastBuild.busy){resultsBeforeOutput();return}const el=document.getElementById('other-view');el.innerHTML='<div class="crumb">'+escapeText(lastBuild.project)+' / Ergebnisse</div><h1>Ergebnisse</h1><div class="build-summary">✓ '+lastBuild.names.length+' Ausgaben · Simulation</div>'+lastBuild.names.map(n=>{const item=lastBuild.captures[n];return '<div class="result-row"><div><strong>'+n+'</strong><small>'+outputLabels[item.type]+'</small></div><div class="flow-actions"><button onclick="openArtifact(\''+n+'\')">Ansehen →</button>'+(item.type==='markdown'?'<button onclick="downloadMarkdown(\''+n+'\')">Markdown herunterladen ↓</button>':'')+'</div></div>'}).join('')+(lastBuild.portal?'<h2 style="margin-top:25px">Gemeinsames Portal</h2><p class="muted">'+lastBuild.htmlNames.join(', ')+'</p><button onclick="portalPreview()">Portal öffnen →</button>':'')};
+portalPreview=function(){setPreviewFormat('html');document.getElementById('persistent-preview-title').textContent='Gemeinsames Portal';document.getElementById('persistent-document').innerHTML='<h2>'+escapeText(lastBuild.project)+'</h2>'+lastBuild.htmlNames.map(n=>'<div class="result-row"><strong>'+n+'</strong><button onclick="openArtifact(\''+n+'\')">Öffnen →</button></div>').join('');document.getElementById('persistent-preview-status').textContent='Portal · nur HTML-Dokumentationen'};
+document.querySelector('.concept-bar small').textContent='Stand 08 · Drei Ausgabearten · Simulierte Generierung';
+updateOutputChoice();setPreviewFormat('html');
+</script>
+<style>
+.output-checks{margin-top:26px;border-top:1px solid var(--line);padding-top:20px}.output-checks h3{margin-bottom:12px}.output-check-row{padding:12px 0;border-bottom:1px solid var(--line)}.output-check-row label{display:flex;gap:10px;align-items:flex-start;font-size:13px}.output-check-row input{accent-color:var(--accent);width:17px;height:17px;flex-shrink:0;margin-top:1px}.output-check-row small{display:block;font-weight:400;color:var(--muted);line-height:1.5;margin-top:5px}.generation-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:20px;flex-wrap:wrap}.generation-footer span{font-size:12px;color:var(--muted)}#management .summary{display:none}.detail-heading{align-items:center}.detail-heading>button{display:none}.output-message{font-size:12px;color:var(--muted);margin-top:12px}.preview-file-picker{padding:8px 18px;background:transparent;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}.preview-file-picker button{font-size:11px;padding:5px 8px}
+</style>
+<script>
+// Output selection is independent from the document currently being previewed.
+const wantedOutputs={ISOProps:new Set(['combined']),LOIN:new Set(['reference']),TempO:new Set(['reference'])};
+const outputHelp={reference:'Klassen, Properties, Metadaten und Graph. Ohne eigene Textkapitel.',combined:'Technische Referenz mit den Texten aus dem Tab Textkapitel.',markdown:'Die Markdown-Datei zum Weiterbearbeiten oder Weitergeben.'};
+const shortOutputLabels={reference:'HTML-Dokumentation',combined:'HTML mit Textkapiteln',markdown:'Markdown-Datei'};
+let resultFiles=[];
+choice.remove();updateOutputChoice=function(){};
+function outputSettings(){return '<section class="output-checks"><h3>Welche Dateien möchtest du erzeugen?</h3>'+['reference','combined','markdown'].map(type=>'<div class="output-check-row"><label><input type="checkbox" data-wanted-output="'+type+'" '+(wantedOutputs[selected].has(type)?'checked':'')+'><span>'+shortOutputLabels[type]+'<small>'+outputHelp[type]+'</small></span></label></div>').join('')+'<p class="output-message" id="output-message"></p><div class="generation-footer"><span id="output-count"></span><button class="primary" id="generate-selected" onclick="build(false)">Ausgewählte Dateien generieren</button></div></section>'}
+function updateOutputSettings(){const choices=wantedOutputs[selected];const count=document.getElementById('output-count');if(!count)return;count.textContent=choices.size+' Dateityp'+(choices.size===1?'':'en')+' ausgewählt';document.getElementById('generate-selected').disabled=!choices.size||buildBusy;const needsText=(choices.has('combined')||choices.has('markdown'))&&!assigned.has(selected);document.getElementById('output-message').innerHTML=needsText?'Für diese Auswahl fehlen noch Textkapitel. <button onclick="detail=\'text\';renderDetail()">Vorlage auswählen →</button>':''}
+const renderBeforeCheckboxes=renderDetail;
+renderDetail=function(){renderBeforeCheckboxes();if(detail==='config'){const panel=document.getElementById('detail-content');panel.querySelector('.detail-actions')?.remove();panel.insertAdjacentHTML('beforeend',outputSettings());panel.querySelectorAll('[data-wanted-output]').forEach(box=>box.onchange=()=>{if(box.checked)wantedOutputs[selected].add(box.dataset.wantedOutput);else wantedOutputs[selected].delete(box.dataset.wantedOutput);updateOutputSettings()});updateOutputSettings()}};
+const previewKinds=document.createElement('div');previewKinds.className='preview-file-picker';previewKinds.innerHTML='<button class="active" data-html-kind="combined">Mit Textkapiteln</button><button data-html-kind="reference">Nur Referenz</button>';formatTabs.after(previewKinds);
+let htmlPreviewKind='combined';
+previewKinds.querySelectorAll('button').forEach(b=>b.onclick=()=>{htmlPreviewKind=b.dataset.htmlKind;previewKinds.querySelectorAll('button').forEach(x=>x.classList.toggle('active',x===b));document.getElementById('preview-source').value='draft';setPreviewFormat('html')});
+draftDocument=function(name){return htmlPreviewKind==='reference'||!assigned.has(name)?referenceDocument(name):draftBeforeOutput(name)};
+const formatBeforeCheckboxes=setPreviewFormat;
+setPreviewFormat=function(format){formatBeforeCheckboxes(format);previewKinds.hidden=format!=='html';previewKinds.style.display=format==='html'?'flex':'none'};
+build=function(all){
+ if(buildBusy){notify('Eine Generierung läuft bereits.');return}
+ const names=(all?activeNames:[selected]).filter(n=>wantedOutputs[n].size);
+ if(!names.length){notify('Bitte in den Einstellungen mindestens einen Dateityp auswählen.');return}
+ const missing=names.find(n=>!assigned.has(n)&&(wantedOutputs[n].has('combined')||wantedOutputs[n].has('markdown')));
+ if(missing){select(missing);detail='text';renderDetail();notify('Für '+missing+' bitte eine Markdown-Vorlage auswählen.');return}
+ const files=names.flatMap(name=>[...wantedOutputs[name]].map(type=>({name,type,text:drafts[name],html:type==='reference'?referenceDocument(name):draftBeforeOutput(name),filename:data[name].id+(type==='reference'?'-reference.html':type==='combined'?'-combined.html':'-documentation.de.md')})));
+ buildBusy=true;lastBuild={project:projectTitle,names,busy:true,portal:all&&portalEnabled&&files.some(f=>f.type!=='markdown'),files};
+ document.getElementById('persistent-preview-status').textContent=files.length+' Dateien werden erzeugt …';updateOutputSettings();if(view==='builds')renderBuilds();
+ setTimeout(()=>{resultFiles=files;buildBusy=false;lastBuild.busy=false;files.filter(f=>f.type!=='markdown').forEach(f=>generatedPreviews[f.name]=f.html);names.forEach(n=>inlineResults[n]=files.filter(f=>f.name===n).length+' Dateien erzeugt · Simulation');updateOutputSettings();if(view==='builds')renderBuilds();const first=files.find(f=>f.name===selected)||files[0];showResultFile(files.indexOf(first));notify(files.length+' Dateien erstellt · Unter Ergebnisse verfügbar.')},1200);
+};
+function showResultFile(index){const item=resultFiles[index];if(!item)return;select(item.name);if(item.type==='markdown'){setPreviewFormat('markdown');document.getElementById('persistent-preview-status').textContent=item.filename+' · Bearbeitbarer Entwurf; Download enthält den erzeugten Stand'}else{setPreviewFormat('html');document.getElementById('preview-source').value='generated';document.getElementById('persistent-document').innerHTML=item.html;document.getElementById('persistent-preview-title').textContent=item.filename;document.getElementById('persistent-preview-status').textContent='Erzeugte Datei · Simulation'}}
+function downloadResultMarkdown(index){const item=resultFiles[index];const url=URL.createObjectURL(new Blob([item.text],{type:'text/markdown;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=item.filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+renderBuilds=function(){const el=document.getElementById('other-view');el.innerHTML='<div class="crumb">'+escapeText(projectTitle)+' / Ergebnisse</div><h1>Erzeugte Dateien</h1>';if(lastBuild?.busy){el.innerHTML+='<div class="build-summary" role="status">Generierung läuft …</div>';return}if(!resultFiles.length){el.innerHTML+='<p class="empty-state">Noch keine Dateien erzeugt.</p><button onclick="overview()">Zu den Ontologien →</button>';return}el.innerHTML+='<div class="build-summary">✓ '+resultFiles.length+' Dateien · Simulation</div>'+resultFiles.map((item,index)=>'<div class="result-row"><div><strong>'+item.name+'</strong><small>'+item.filename+'</small></div><div class="flow-actions"><button onclick="showResultFile('+index+')">Ansehen →</button>'+(item.type==='markdown'?'<button onclick="downloadResultMarkdown('+index+')">Herunterladen ↓</button>':'')+'</div></div>').join('')+(lastBuild.portal?'<h2>Gemeinsames Portal</h2><button onclick="portalPreview()">Portal ansehen →</button>':'')};
+portalPreview=function(){setPreviewFormat('html');document.getElementById('persistent-preview-title').textContent='Gemeinsames Portal';document.getElementById('persistent-document').innerHTML='<h2>'+escapeText(lastBuild.project)+'</h2>'+resultFiles.map((f,i)=>f.type==='markdown'?'':'<div class="result-row"><div><strong>'+f.name+'</strong><small>'+shortOutputLabels[f.type]+'</small></div><button onclick="showResultFile('+i+')">Öffnen →</button></div>').join('');document.getElementById('persistent-preview-status').textContent='Portal · erzeugte HTML-Dokumentationen'};
+document.querySelector('#management .heading h1').textContent='Ontologien';
+document.querySelector('.topbar .primary').textContent='Alle ausgewählten Dateien generieren';
+document.querySelector('.concept-bar small').textContent='Stand 09 · Mehrere Ausgaben pro Ontologie · Simulation';
+detail='config';renderDetail();setPreviewFormat('html');
+</script>
+<style>
+.artifact-picker{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);flex-wrap:wrap}.artifact-picker label{font-size:12px;color:var(--muted)}.artifact-picker select{flex:1;min-width:130px;max-width:100%;padding:8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit}.markdown-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}.markdown-actions small{color:var(--muted)}.preview-paper .template-options{padding:0}.preview-controls>select,.preview-controls>label{display:none!important}
+</style>
+<script>
+// Single workspace: settings on the left, editing and generated files on the right.
+document.querySelector('[data-view="builds"]').remove();
+tabs.querySelector('[data-detail="text"]').remove();
+tabs.querySelector('[data-detail="result"]').remove();
+tabs.querySelectorAll('button').forEach((button,index)=>{
+ button.onkeydown=e=>{const buttons=[...tabs.querySelectorAll('button')];let target;if(e.key==='ArrowRight')target=(index+1)%buttons.length;if(e.key==='ArrowLeft')target=(index+buttons.length-1)%buttons.length;if(e.key==='Home')target=0;if(e.key==='End')target=buttons.length-1;if(target!==undefined){e.preventDefault();buttons[target].click();buttons[target].focus()}};
+});
+const artifactPicker=document.createElement('div');artifactPicker.className='artifact-picker';artifactPicker.innerHTML='<label for="artifact-select">Anzeigen</label><select id="artifact-select" aria-label="Entwurf oder erzeugte Datei"></select><button id="artifact-download" hidden>Markdown herunterladen ↓</button>';
+formatTabs.after(artifactPicker);
+const portalResultButton=document.createElement('button');portalResultButton.textContent='Portal ansehen';portalResultButton.hidden=true;portalResultButton.onclick=()=>{visibleArtifact=-1;portalPreview()};artifactPicker.append(portalResultButton);
+let visibleArtifact=-1;
+function refreshArtifactPicker(){
+ portalResultButton.hidden=!lastBuild?.portal||lastBuild.busy;
+ const select=document.getElementById('artifact-select');select.replaceChildren();
+ const draft=document.createElement('option');draft.value='draft';draft.textContent='Aktueller Entwurf';select.append(draft);
+ resultFiles.forEach((item,index)=>{if(item.name!==selected)return;const option=document.createElement('option');option.value=String(index);option.textContent=item.filename;select.append(option)});
+ select.value=visibleArtifact>=0&&resultFiles[visibleArtifact]?.name===selected?String(visibleArtifact):'draft';
+ const download=document.getElementById('artifact-download');download.hidden=select.value==='draft'||resultFiles[Number(select.value)]?.type!=='markdown';download.onclick=()=>downloadResultMarkdown(Number(select.value));
+}
+function editMarkdown(){detail='config';document.getElementById('preview-source').value='draft';visibleArtifact=-1;setPreviewFormat('markdown');refreshArtifactPicker()}
+const liveBeforeCleanup=renderLiveMarkdown;
+renderLiveMarkdown=function(){
+ if(!assigned.has(selected)){
+  const target=document.getElementById('persistent-document');target.innerHTML='<h2>Markdown für '+escapeText(selected)+'</h2><div class="template-options" id="right-template-options"></div>';
+  templateOptions(document.getElementById('right-template-options'),false);
+  const create=target.querySelector('.create-template');const createOriginal=create.onclick;
+  create.onclick=()=>{createOriginal();detail='config';renderDetail();setPreviewFormat('markdown');refreshArtifactPicker()};
+  document.getElementById('persistent-preview-status').textContent='Vorlage auswählen · Kompakt oder Standard';return;
+ }
+ liveBeforeCleanup();
+ const bar=document.createElement('div');bar.className='markdown-actions';bar.innerHTML='<small>Markdown · Sitzungsentwurf</small><button onclick="chooseTemplate()">Neue Vorlage …</button>';
+ document.getElementById('persistent-document').prepend(bar);
+};
+const templateOptionsBeforeCleanup=templateOptions;
+templateOptions=function(container,replace){templateOptionsBeforeCleanup(container,replace);const button=container.querySelector('.create-template');const previous=button.onclick;button.onclick=()=>{if(button.disabled)return;previous();detail='config';renderDetail();setPreviewFormat('markdown')}};
+const detailBeforeCleanup=renderDetail;
+renderDetail=function(){if(detail!=='config'&&detail!=='checks')detail='config';detailBeforeCleanup();const message=document.getElementById('output-message');if(message&&message.querySelector('button')){const button=message.querySelector('button');button.textContent='Markdown-Vorlage rechts auswählen →';button.onclick=editMarkdown}};
+const settingsBeforeCleanup=updateOutputSettings;
+updateOutputSettings=function(){settingsBeforeCleanup();const button=document.querySelector('#output-message button');if(button){button.textContent='Markdown-Vorlage rechts auswählen →';button.onclick=editMarkdown}};
+function displayArtifact(index){
+ const item=resultFiles[index];if(!item)return;
+ visibleArtifact=index;setPreviewFormat(item.type==='markdown'?'markdown':'html');
+ const target=document.getElementById('persistent-document');
+ if(item.type==='markdown'){target.replaceChildren();const title=document.createElement('h2');title.textContent=item.filename;const source=document.createElement('pre');source.textContent=item.text;const edit=document.createElement('button');edit.textContent='Aktuellen Markdown-Entwurf bearbeiten';edit.onclick=editMarkdown;target.append(title,edit,source)}else target.innerHTML=item.html;
+ document.getElementById('persistent-preview-title').textContent=item.name;
+ document.getElementById('persistent-preview-status').textContent='Erzeugter Stand · Simulation';refreshArtifactPicker();
+}
+document.getElementById('artifact-select').onchange=e=>{if(e.target.value==='draft'){visibleArtifact=-1;document.getElementById('preview-source').value='draft';refreshPersistentPreview();refreshArtifactPicker()}else displayArtifact(Number(e.target.value))};
+const selectBeforeCleanup=select;select=function(name){visibleArtifact=-1;document.getElementById('preview-source').value='draft';selectBeforeCleanup(name);refreshArtifactPicker()};
+showResultFile=function(index){const item=resultFiles[index];if(!item)return;select(item.name);displayArtifact(index)};
+const buildBeforeCleanup=build;
+build=function(all){
+ const names=(all?activeNames:[selected]).filter(n=>wantedOutputs[n].size);
+ const missing=names.find(n=>!assigned.has(n)&&(wantedOutputs[n].has('combined')||wantedOutputs[n].has('markdown')));
+ if(missing){select(missing);editMarkdown();notify('Bitte zuerst eine Markdown-Vorlage für '+missing+' auswählen.');return}
+ buildBeforeCleanup(all);
+};
+const changeBeforeCleanup=changeView;changeView=function(next){changeBeforeCleanup(next==='builds'?'ontologies':next)};
+const formatBeforeCleanup=setPreviewFormat;setPreviewFormat=function(format){visibleArtifact=-1;document.getElementById('preview-source').value='draft';formatBeforeCleanup(format);refreshArtifactPicker()};
+// Preserve the selected generated snapshot on refresh rather than silently returning to the draft.
+const refreshBeforeCleanup=refreshPersistentPreview;refreshPersistentPreview=function(){if(visibleArtifact>=0){const index=visibleArtifact;displayArtifact(index)}else refreshBeforeCleanup()};
+const oldDisplayArtifact=displayArtifact;
+displayArtifact=function(index){oldDisplayArtifact(index);visibleArtifact=index;refreshArtifactPicker()};
+document.querySelector('.concept-bar small').textContent='Stand 10 · Einstellungen links, Dokumente rechts · Simulation';
+document.querySelector('.topbar .primary').textContent='Projekt generieren';
+document.querySelector('#management .heading .muted').textContent='Ontologie auswählen · Dateien ankreuzen · Generieren';
+detail='config';renderDetail();setPreviewFormat('html');refreshArtifactPicker();
+</script>
+<style>
+.markdown-profile-bar{padding:12px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;flex-wrap:wrap}.markdown-profile-bar label{font-size:12px}.markdown-profile-bar select{padding:8px;border:1px solid var(--line);border-radius:4px;background:transparent;color:inherit}.markdown-profile-bar small{flex-basis:100%;color:var(--muted);line-height:1.5}.markdown-profile-bar[hidden]{display:none}
+</style>
+<script>
+shortOutputLabels.combined='Kombinierte HTML-Seite';
+outputLabels.combined='HTML · Referenz + Markdown-Texte';
+outputHelp.combined='Technische Referenz + Markdown-Texte → eine gemeinsame HTML-Seite. Die beiden Einzeldateien müssen dafür nicht zusätzlich ausgewählt sein.';
+outputHelp.markdown='Markdown separat ausgeben. Vorlage: Standard (9 Kapitel) oder Kompakt (4 Kapitel).';
+const profilePreferences={ISOProps:'standard',LOIN:'standard',TempO:'standard'};
+const profileBar=document.createElement('div');profileBar.className='markdown-profile-bar';profileBar.innerHTML='<label for="visible-markdown-profile">Markdown-Vorlage</label><select id="visible-markdown-profile"><option value="standard">Standard · 9 Kapitel</option><option value="compact">Kompakt · 4 Kapitel</option></select><button id="apply-visible-profile">Vorlage erstellen</button><small id="visible-profile-description"></small>';
+formatTabs.after(profileBar);
+function updateVisibleProfile(){
+ profileBar.hidden=previewFormat!=='markdown';
+ document.getElementById('visible-markdown-profile').value=profilePreferences[selected];
+ document.getElementById('apply-visible-profile').textContent=assigned.has(selected)?'Vorlage ersetzen …':'Vorlage erstellen';
+ document.getElementById('visible-profile-description').textContent=profilePreferences[selected]==='compact'?'Kompakt: Einleitung, Umfang, Modell und Beispiele.':'Standard: zusätzlich Modellierungsentscheidungen, Interoperabilität, Validierung, Pflege und Quellen.';
+}
+document.getElementById('visible-markdown-profile').onchange=e=>{profilePreferences[selected]=e.target.value;updateVisibleProfile()};
+document.getElementById('apply-visible-profile').onclick=()=>{
+ if(assigned.has(selected)){
+  chooseTemplate();const selector=document.querySelector('#template-dialog-content select');selector.value=profilePreferences[selected];selector.dispatchEvent(new Event('change'));
+ }else{
+  drafts[selected]=templateBody(profilePreferences[selected],selected);assigned.add(selected);renderDetail();setPreviewFormat('markdown');
+ }
+};
+const optionsBeforeVisibleProfile=templateOptions;
+templateOptions=function(container,replace){optionsBeforeVisibleProfile(container,replace);const selector=container.querySelector('select');selector.value=profilePreferences[selected];selector.dispatchEvent(new Event('change'));const create=container.querySelector('.create-template');const previous=create.onclick;create.onclick=()=>{if(create.disabled)return;profilePreferences[selected]=selector.value;previous();updateVisibleProfile()}};
+const formatBeforeVisibleProfile=setPreviewFormat;
+setPreviewFormat=function(format){formatBeforeVisibleProfile(format);updateVisibleProfile()};
+const selectBeforeVisibleProfile=select;
+select=function(name){selectBeforeVisibleProfile(name);updateVisibleProfile()};
+document.querySelector('.concept-bar small').textContent='Stand 11 · Markdown-Profile & kombinierte Ausgabe · Simulation';
+renderDetail();setPreviewFormat('markdown');
+</script>
+</body>
+</html>

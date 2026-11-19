@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en" data-theme="{{ theme|default('light') }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }}</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; color: #24383c; background: #f7f9fa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    header { background: #155c63; color: white; padding: 32px 24px; }
+    header > div, main { max-width: 1120px; margin: auto; }
+    h1 { font-size: 2rem; margin: 0 0 8px; overflow-wrap: anywhere; }
+    header p { margin: 0; color: #deeceb; }
+    main { padding: 12px 24px 48px; }
+    article { padding: 28px 0; border-bottom: 1px solid #cbd8da; display: grid; grid-template-columns: minmax(0, 1fr) 180px; gap: 24px; }
+    h2 { font-size: 1.25rem; margin: 6px 0 12px; overflow-wrap: anywhere; }
+    a { color: #155c63; text-underline-offset: 4px; }
+    a:hover { color: #843e22; }
+    a:focus-visible { outline: 3px solid #ba652f; outline-offset: 4px; }
+    p { line-height: 1.6; margin: 0; overflow-wrap: anywhere; }
+    .identifier { color: #607078; font-size: .875rem; }
+    dl { font-size: .9rem; margin: 0; align-self: center; }
+    dl div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
+    dt { color: #607078; } dd { margin: 0; overflow-wrap: anywhere; }
+    :root { --panel: #edf4f4; --line: #cbd8da; --brand: #155c63; }
+    :root[data-theme="dark"] { color: #e0e8eb; background: #171c20; }
+    html[data-theme="dark"] article { border-color: #425159; }
+    html[data-theme="dark"] a { color: #8ed3cc; }
+    html[data-theme="dark"] a:hover { color: #f0a58e; }
+    html[data-theme="dark"] :is(.identifier, dt) { color: #abbac0; }
+    @media(max-width: 620px) { article { grid-template-columns: minmax(0, 1fr); gap: 16px; } dl { max-width: 280px; } }
+  </style>
+  {% include 'theme.html.j2' %}
+</head>
+<body>
+  <header><div><h1>{{ title }}</h1><p>{{ entries|length }} ontologies</p></div></header>
+  <main>
+    {% for entry in entries %}
+    <article>
+      <div>
+        <span class="identifier">{{ entry.id }}</span>
+        <h2><a href="{{ entry.href }}">{{ entry.title }}</a></h2>
+        {% if entry.description %}<p>{{ entry.description }}</p>{% endif %}
+      </div>
+      <dl>
+        {% if entry.version %}<div><dt>Version</dt><dd>{{ entry.version }}</dd></div>{% endif %}
+        <div><dt>Classes</dt><dd>{{ entry.classes }}</dd></div>
+        <div><dt>Properties</dt><dd>{{ entry.properties }}</dd></div>
+      </dl>
+    </article>
+    {% endfor %}
+  </main>
+</body>
+</html>

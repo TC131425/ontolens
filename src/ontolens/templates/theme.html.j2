@@ -1,0 +1,20 @@
+<style>
+  :root { color-scheme: light; --page-bg: #fff; }
+  :root[data-theme="dark"] {
+    color-scheme: dark; --page-bg: #171c20; --ink: #e0e8eb; --muted: #abbac0;
+    --line: #425159; --panel: #283238; --brand: #8ed3cc; --brand-dark: #a3dfd8;
+    --accent: #f0a58e; --code: #29383d;
+  }
+  body { background: var(--page-bg); }
+  .document-options { padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+  .document-options summary { cursor: pointer; font-size: 14px; }
+  .document-options label { display: flex; gap: 12px; align-items: center; margin-top: 10px; }
+  .document-options input { width: 20px; height: 20px; accent-color: var(--brand); }
+  html[data-theme="dark"] :is(.toc, .term, .quality-section, .quality-stat, .agent, .icon-link, .doc-figure, .figure-showcase, .visualization-panel, .datatype-inspector, .layout-button, .visualization-toggle) { background: var(--page-bg); }
+  html[data-theme="dark"] :is(.restriction-list li, .instance-list li, .restriction-constraint, .restriction-details summary, .instance-details summary, figcaption) { background: var(--panel); }
+  html[data-theme="dark"] :is(.missing-mandatory th, .missing-mandatory td, .agent.missing-mandatory, .quality-badge.error) { background: #362526; color: #f2adad; border-color: #ba6666; }
+  html[data-theme="dark"] :is(.missing-optional th, .missing-optional td, .agent.missing-optional, .quality-badge.warning) { background: #322e20; color: #edcf79; border-color: #b49a49; }
+  html[data-theme="dark"] .editorial-flow pre { background: var(--panel); color: var(--ink); }
+  html[data-theme="dark"] .editorial-flow blockquote { background: var(--panel); color: var(--ink); }
+  @media print { .document-options { display: none; } }
+</style>

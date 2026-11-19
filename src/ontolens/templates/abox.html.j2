@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ doc.title }} | A-Box</title>
+  <style data-ontolens-asset="abox.css">{{ inline_style('abox.css') }}</style>
+</head>
+<body>
+<header><div><span class="eyebrow">ONTOLENS / WISSENSGRAPH</span><h1>{{ doc.title }}</h1></div><a class="download" href="{{ source_href }}" download><i data-lucide="download"></i> RDF herunterladen</a></header>
+<div class="stats"><span><strong>{{ doc.instances|rejectattr('external')|list|length }}</strong> Ressourcen</span><span><strong>{{ doc.relations|length }}</strong> Beziehungen</span><span><strong>{{ doc.triple_count }}</strong> Tripel</span><span><strong>{{ doc.instances|selectattr('external')|list|length }}</strong> externe Referenzen</span></div>
+<main>
+  <aside class="catalog">
+    <label for="search">Instanzen suchen</label><input id="search" type="search" placeholder="Name, IRI oder Wert" autocomplete="off">
+    <label for="class-filter">Klasse</label><select id="class-filter"><option value="">Alle Klassen</option></select>
+    <div class="list-heading"><h2>Instanzen</h2><span id="result-count"></span></div>
+    <nav id="instances" aria-label="Instanzen"></nav>
+  </aside>
+  <section class="workspace" aria-label="Wissensgraph">
+    <div class="toolbar">
+      <label>Ansicht <select id="scope"><option value="all">Gesamter Graph</option><option value="focus">Nachbarschaft</option></select></label>
+      <label id="depth-label" hidden>Distanz <select id="depth"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+      <label>Layout <select id="layout"><option value="cose">Netzwerk</option><option value="breadthfirst">Hierarchie</option><option value="concentric">Radial</option></select></label>
+      <label class="check"><input id="literals" type="checkbox">Werte</label>
+      <label class="check"><input id="edge-labels" type="checkbox" checked>Prädikate</label>
+      <div class="tools">
+        <button id="fit" title="Graph einpassen" aria-label="Graph einpassen"><i data-lucide="maximize"></i></button>
+        <button id="relayout" title="Neu anordnen" aria-label="Neu anordnen"><i data-lucide="network"></i></button>
+        <button id="zoom-in" title="Vergrößern" aria-label="Vergrößern"><i data-lucide="zoom-in"></i></button>
+        <button id="zoom-out" title="Verkleinern" aria-label="Verkleinern"><i data-lucide="zoom-out"></i></button>
+        <button id="export" title="PNG herunterladen" aria-label="PNG herunterladen"><i data-lucide="image-down"></i></button>
+      </div>
+    </div>
+    <div id="graph" role="img" aria-label="Interaktiver Instanzgraph"></div>
+    <div class="graph-footer"><span id="graph-status" role="status">Graph wird geladen …</span></div>
+    <details id="graph-legend" class="graph-legend">
+      <summary>Legende</summary>
+      <div class="legend-content">
+        <section aria-label="Ontologien"><h3>Ontologien</h3><div id="namespace-legend" class="namespace-legend"></div></section>
+        <section aria-label="Darstellung"><h3>Darstellung</h3><ul class="shape-legend">
+          <li><span class="legend-node" aria-hidden="true"></span>Instanz / Klasse</li>
+          <li><span class="legend-node legend-literal" aria-hidden="true"></span>Literalwert</li>
+          <li><span class="legend-node legend-reference" aria-hidden="true"></span>Externe Referenz</li>
+          <li><span class="legend-edge" aria-hidden="true"></span>Beziehung</li>
+          <li><span class="legend-edge legend-dotted" aria-hidden="true"></span>Literalverbindung</li>
+        </ul></section>
+      </div>
+    </details>
+  </section>
+  <aside id="details" class="details" aria-label="Instanzdetails"></aside>
+</main>
+<noscript><p>JavaScript ist deaktiviert. Die vollständigen Instanzdaten stehen im folgenden Verzeichnis.</p></noscript>
+<details class="all-data"><summary>Vollständiges Instanzverzeichnis ({{ doc.instances|length }})</summary>
+<div class="directory-content">
+{% for record in records.values() %}{% set instance = record.instance %}
+<article id="{{ record.anchor }}" class="term">
+  <h2>{{ instance.resource.label }}</h2>
+  <div class="term-meta"><span class="pill">{{ 'Externe Referenz' if instance.external else 'Instanz' }}</span><code>{{ instance.resource.curie }}</code><a class="graph-link" href="#instance={{ instance.resource.id|urlencode }}">Im Graphen auswählen</a></div>
+  <table class="record-table"><tbody>
+    <tr><th scope="row">IRI</th><td>{% if instance.resource.id.startswith(('https://', 'http://')) %}<a href="{{ instance.resource.id }}">{{ instance.resource.id }}</a>{% else %}{{ instance.resource.id }}{% endif %}</td></tr>
+    <tr><th scope="row">Klassen</th><td>{% for type in instance.types %}<span class="curie">{{ type.curie }}</span>{% if not loop.last %}<br>{% endif %}{% else %}<span class="record-muted">Kein Typ angegeben</span>{% endfor %}</td></tr>
+    {% if instance.values %}<tr class="record-section"><th colspan="2">Datenwerte <span>{{ instance.values|length }}</span></th></tr>{% endif %}
+    {% for value in instance.values %}<tr><th scope="row">{{ value.predicate.curie }}</th><td><span class="literal-value">{{ value.value }}</span>{% if value.language %} <span class="lang">{{ value.language }}</span>{% endif %}{% if value.datatype %}<small class="datatype">{{ value.datatype }}</small>{% endif %}</td></tr>{% endfor %}
+    {% for title, relations, incoming in [('Ausgehende Beziehungen', record.outgoing, false), ('Eingehende Beziehungen', record.incoming, true)] %}
+    {% if relations %}<tr class="record-section"><th colspan="2">{{ title }} <span>{{ relations|length }}</span></th></tr>{% endif %}
+    {% for relation in relations %}{% set target = records[relation.source if incoming else relation.target] %}
+    <tr><th scope="row">{{ relation.predicate.curie }}</th><td><a href="#{{ target.anchor }}">{{ target.instance.resource.label }}</a><small class="datatype">{{ target.instance.resource.curie }}</small></td></tr>
+    {% endfor %}{% endfor %}
+  </tbody></table>
+</article>{% endfor %}
+</div>
+</details>
+<script id="abox-data" type="application/json">{{ data|tojson }}</script>
+<script id="abox-config" type="application/json">{{ {"maxNodes": max_nodes}|tojson }}</script>
+{% include 'cytoscape_scripts.html.j2' %}
+<script data-ontolens-asset="lucide.min.js">{{ inline_script('lucide.min.js', 'lucide-LICENSE.txt') }}</script>
+<script data-ontolens-asset="abox.js">{{ inline_script('abox.js') }}</script>
+</body>
+</html>

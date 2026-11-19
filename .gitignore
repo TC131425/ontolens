@@ -1,0 +1,39 @@
+# Dependencies, caches and generated build output (Python and frontend)
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+node_modules/
+*.tsbuildinfo
+.coverage
+.coverage.*
+htmlcov/
+
+# Local tools and temporary work
+.idea/
+.obsidian/
+.DS_Store
+Thumbs.db
+/tmp/
+.local-launcher/
+
+# Machine-specific settings and persistent application state
+.env
+.env.*
+!.env.example
+/ontolens.project.yaml
+*.outputs.json
+*.projects.json
+/docker-data/*
+!/docker-data/.gitkeep
+/ontologies/
+/archive/*
+!/archive/README.md
+
+# Keep all example datasets local until individual examples are approved for publication.
+/examples/

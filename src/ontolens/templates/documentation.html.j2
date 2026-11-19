@@ -1,0 +1,1882 @@
+{% set prose_fields = ("Comments", "Description", "Abstract", "Definition", "Scope note", "History note", "Example") %}
+{% macro value_list(vals, title) -%}
+  {%- for value in vals -%}
+    {%- if title in ("Labels", "Label", "Title") or title in prose_fields -%}
+    <span {% if title in prose_fields %}data-toc-text="{{ title }}"{% else %}class="term-label"{% endif %}{% if value.lang %} lang="{{ value.lang }}"{% endif %}>
+    {%- endif -%}
+    {%- if value.href %}<a href="{{ value.href }}">{{ value.text }}</a>{% else %}{{ value.text }}{% endif -%}
+    {%- if title in ("Labels", "Label", "Title") or title in prose_fields %}</span>{% endif -%}
+    {% if value.lang %} <span class="lang">[{{ value.lang }}]</span>{% endif %}{% if not loop.last %}<br>{% endif %}
+  {%- endfor -%}
+{%- endmacro %}
+
+{% macro render_values(title, vals) -%}
+  {% if vals %}
+  <tr>
+    <th>{{ title }}</th>
+    <td>{{ value_list(vals, title) }}</td>
+  </tr>
+  {% endif %}
+{%- endmacro %}
+
+{% macro render_section(title, terms) -%}
+  {% if terms %}
+  <h3 id="{{ title|lower|replace(' ', '-') }}">{{ title }}</h3>
+  {% for term in terms %}
+  <article id="{{ term.anchor }}" class="term">
+    <h3>{{ term.title }}</h3>
+    <div class="term-meta">
+      <span class="pill">{{ term.kind }}</span>
+      <span class="pill term-curie">{{ term.curie }}</span>
+    </div>
+    <table>
+      <tr><th>IRI</th><td><a class="term-iri" href="{{ term.uri }}">{{ term.uri }}</a></td></tr>
+      {{ render_values("Labels", term.labels) }}
+      {{ render_values("Comments", term.comments) }}
+      {% if term.types %}<tr><th>Types</th><td>{% for type in term.types %}<span class="curie">{{ type }}</span>{% if not loop.last %}<br>{% endif %}{% endfor %}</td></tr>{% endif %}
+      {% if term.instances %}
+      <tr>
+        <th>Instances</th>
+        <td>
+          <details class="instance-details">
+            <summary>{{ term.instances|length }} instance{% if term.instances|length != 1 %}s{% endif %}</summary>
+            <ul class="instance-list">
+              {% for instance in term.instances %}
+              <li>{% if instance.href %}<a href="{{ instance.href }}">{{ instance.text }}</a>{% else %}{{ instance.text }}{% endif %}</li>
+              {% endfor %}
+            </ul>
+          </details>
+        </td>
+      </tr>
+      {% endif %}
+      {{ render_values("Subclass of", term.parents) }}
+      {{ render_values("Subproperty of", term.subproperties) }}
+      {{ render_values("Domain", term.domains) }}
+      {{ render_values("Range", term.ranges) }}
+      {{ render_values("Equivalent", term.equivalents) }}
+      {{ render_values("Inverse of", term.inverses) }}
+      {% if term.restrictions %}
+      <tr class="restriction-row">
+        <th>Restrictions</th>
+        <td>
+          <details class="restriction-details">
+            <summary>{{ term.restrictions|length }} restriction{% if term.restrictions|length != 1 %}s{% endif %}</summary>
+            <ul class="restriction-list">
+              {% for restriction in term.restrictions %}
+              <li>
+                <span class="restriction-property">{% if restriction.property.href %}<a href="{{ restriction.property.href }}">{{ restriction.property.text }}</a>{% else %}{{ restriction.property.text }}{% endif %}</span>
+                <span class="restriction-condition"><span class="restriction-constraint">{{ restriction.constraint }}</span>{% if restriction.value is not none %} <strong>{{ restriction.value }}</strong>{% endif %}</span>
+                {% if restriction.filler %}<span class="restriction-filler">of {% if restriction.filler.href %}<a href="{{ restriction.filler.href }}">{{ restriction.filler.text }}</a>{% else %}{{ restriction.filler.text }}{% endif %}</span>{% endif %}
+              </li>
+              {% endfor %}
+            </ul>
+          </details>
+        </td>
+      </tr>
+      {% endif %}
+      {% for item in term.other_annotations %}
+      {{ render_values(item.label, item.values) }}
+      {% endfor %}
+    </table>
+  </article>
+  {% endfor %}
+  {% endif %}
+{%- endmacro %}
+
+{% macro toc_term(term) -%}
+  <li>
+    <a href="#{{ term.anchor }}">{{ term.title }}</a>
+    {% set shown = namespace(count=0) %}
+    {% for label in term.labels %}
+      {% if label.text != term.title and shown.count < 2 %}
+        <span class="toc-alt">{{ label.text }}{% if label.lang %} <span lang="{{ label.lang }}">[{{ label.lang }}]</span>{% endif %}</span>
+        {% set shown.count = shown.count + 1 %}
+      {% endif %}
+    {% endfor %}
+  </li>
+{%- endmacro %}
+
+{% macro toc_section(title, anchor, terms) -%}
+  {% if terms %}
+  <li class="toc-group">
+    <a class="toc-heading" href="#{{ anchor }}">{{ title }}</a>
+    <ul>
+      {% for term in terms %}
+        {{ toc_term(term) }}
+      {% endfor %}
+    </ul>
+  </li>
+  {% endif %}
+{%- endmacro %}
+<!doctype html>
+<html lang="{{ page_language }}" data-theme="{{ theme }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page_title }}</title>
+  <script type="application/ld+json">{{ json_ld|tojson }}</script>
+  {% include 'cytoscape_scripts.html.j2' %}
+  <script data-ontolens-asset="graph-layout.js">{{ inline_script('graph-layout.js') }}</script>
+  <script data-ontolens-asset="graph-labels.js">{{ inline_script('graph-labels.js') }}</script>
+  <style>
+    :root {
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #d7dce2;
+      --panel: #f6f8fa;
+      --brand: #155c63;
+      --brand-dark: #0f4449;
+      --accent: #b84a39;
+      --code: #eef3f5;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font: 16px/1.55 "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #fff;
+    }
+    header {
+      color: #fff;
+      background:
+        linear-gradient(120deg, rgba(15, 68, 73, .96), rgba(21, 92, 99, .92)),
+        radial-gradient(circle at 85% 20%, rgba(255, 255, 255, .16), transparent 34%);
+      border-bottom: 5px solid var(--accent);
+    }
+    .wrap { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+    .hero {
+      padding: 38px 0 34px;
+    }
+    .hero-copy { min-width: 0; }
+    h1 { margin: 0 0 10px; font-size: clamp(2rem, 4vw, 3.2rem); line-height: 1.1; }
+    .subtitle { max-width: 760px; margin: 0; color: #e8f2f3; white-space: pre-line; }
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .version,
+    .hero-stat {
+      display: inline-block;
+      padding: 4px 10px;
+      border: 1px solid #b8d5d8;
+      border-radius: 4px;
+      color: #e8f2f3;
+      background: rgba(255, 255, 255, .08);
+    }
+    .figure-showcase {
+      padding: 0 0 10px;
+      background: #f8fafb;
+    }
+    .figure-stack {
+      display: grid;
+      gap: 18px;
+    }
+    .doc-figure {
+      position: relative;
+      margin: 0;
+      overflow: visible;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .doc-figure:hover {
+      z-index: 2;
+      transform: scale(1.035);
+      border-color: #aebbc4;
+      box-shadow: 0 18px 42px rgba(20, 28, 32, .18);
+    }
+    .doc-figure img {
+      display: block;
+      width: 100%;
+      max-height: min(72vh, 760px);
+      object-fit: contain;
+      padding: 18px;
+      background: #fff;
+      cursor: zoom-in;
+    }
+    .doc-figure figcaption {
+      padding: 11px 14px;
+      border-top: 1px solid var(--line);
+      color: var(--brand-dark);
+      background: #f4f7f8;
+      font-weight: 650;
+    }
+    .figure-zoom {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 28px;
+      background: rgba(20, 28, 32, .82);
+    }
+    .figure-zoom:target {
+      display: flex;
+    }
+    .figure-zoom img {
+      display: block;
+      max-width: min(1200px, 96vw);
+      max-height: 86vh;
+      object-fit: contain;
+      padding: 18px;
+      border-radius: 6px;
+      background: #fff;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+    }
+    .figure-zoom a {
+      position: absolute;
+      inset: 0;
+      cursor: zoom-out;
+    }
+    .figure-zoom span {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .55);
+      display: grid;
+      place-items: center;
+      font-size: 1.6rem;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .page {
+      display: grid;
+      grid-template-columns: minmax(230px, 300px) minmax(0, 1fr);
+      gap: 32px;
+      align-items: start;
+      padding: 28px 0 56px;
+    }
+    main { min-width: 0; }
+    @media screen and (min-width: 1220px) {
+      .page-with-graph { width: min(1600px, calc(100% - 40px)); }
+      .page-with-graph main > :not(#visualization) { max-width: 848px; }
+    }
+    aside.toc {
+      position: sticky;
+      top: 18px;
+      max-height: calc(100vh - 36px);
+      overflow: auto;
+      padding: 18px 18px 20px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+    .toc-title {
+      display: block;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--brand);
+      color: var(--brand-dark);
+      font-size: 1.15rem;
+    }
+    aside.toc ul { margin: 0; padding: 0; list-style: none; }
+    aside.toc li { margin: 0; }
+    aside.toc a { display: inline-block; overflow-wrap: anywhere; line-height: 1.25; }
+    .toc-group { padding: 12px 0 0; }
+    .toc-heading { font-weight: 700; color: var(--brand-dark); }
+    .toc-search { display: grid; gap: 4px; margin-bottom: 10px; }
+    .toc-search [hidden], .toc [hidden], .toc.is-filtered li > .toc-alt { display: none; }
+    .toc-search-box { display: flex; align-items: center; gap: 6px; padding: 0 6px 0 9px; border: 1px solid var(--line); border-radius: 4px; color: var(--muted); background: var(--page-bg); }
+    .toc-search-box:focus-within { outline: 2px solid var(--brand); outline-offset: 1px; }
+    .toc-search-box input { flex: 1; min-width: 0; padding: 8px 0; border: 0; outline: 0; color: var(--ink); background: transparent; font: inherit; font-size: .9rem; }
+    .toc-search-box input::-webkit-search-cancel-button { display: none; }
+    .toc-search-box button { border: 0; border-radius: 3px; padding: 3px 6px; background: transparent; color: var(--brand-dark); cursor: pointer; font: inherit; }
+    .toc-search-box button:hover { background: var(--panel); }
+    .toc-search-count, .toc-match-field { color: var(--muted); font-size: .82rem; }
+    .toc-scopes { color: var(--muted); font-size: .82rem; }
+    .toc-scopes summary { cursor: pointer; width: fit-content; padding: 3px 0; }
+    .toc-scopes fieldset { margin: 3px 0; padding: 6px 9px; border: 1px solid var(--line); border-radius: 4px; }
+    .toc-scopes label { display: flex; align-items: baseline; gap: 6px; padding-block: 2px; cursor: pointer; }
+    .toc-scopes input { margin: 0; accent-color: var(--brand); }
+    .toc-match-source { display: block; font-weight: 600; }
+    .toc-match-field { display: block; margin-top: 2px; }
+    .toc mark { background: #ffe4a2; color: #332907; border-radius: 2px; }
+    html[data-theme="dark"] .toc.is-filtered a { color: var(--brand-dark); }
+    html[data-theme="dark"] .toc mark { background: #705522; color: #fff4ce; }
+    .toc-jump-highlight { outline: 2px solid var(--brand); outline-offset: 2px; }
+    @media print { .toc-search { display: none; } }
+    .toc-group > ul { padding: 7px 0 0 12px; }
+    .toc-group > ul > li { padding: 4px 0; }
+    .toc-alt {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      color: var(--brand-dark);
+      font-size: 1.55rem;
+    }
+    h3 { margin: 26px 0 10px; color: var(--brand-dark); font-size: 1.15rem; }
+    a { color: #0b5cad; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    table { width: 100%; border-collapse: collapse; margin: 10px 0 18px; }
+    th, td { padding: 9px 10px; border: 1px solid var(--line); vertical-align: top; text-align: left; }
+    th { width: 230px; background: var(--panel); font-weight: 650; }
+    .instance-details summary {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--brand-dark);
+      background: #f0f5f6;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+    .instance-details[open] summary { margin-bottom: 8px; }
+    .instance-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .instance-list li {
+      padding: 4px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fbfcfd;
+    }
+    .restriction-details summary {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--brand-dark);
+      background: #e5f0f1;
+      font-weight: 700;
+      font-size: .9rem;
+    }
+    .restriction-details[open] summary {
+      margin-bottom: 8px;
+    }
+    .restriction-list {
+      display: block;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .restriction-list li {
+      display: block;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfd;
+    }
+    .restriction-list li + li { margin-top: 7px; }
+    .restriction-property { font-weight: 650; }
+    .restriction-condition { display: inline-block; white-space: nowrap; margin: 0 3px; }
+    .restriction-constraint {
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #e5f0f1;
+      color: var(--brand-dark);
+      font-size: .86rem;
+      font-weight: 700;
+    }
+    .restriction-filler { color: var(--muted); }
+    code, .curie { padding: 2px 5px; background: var(--code); border-radius: 4px; font-family: Consolas, "Liberation Mono", monospace; font-size: .92em; }
+    .term {
+      margin: 14px 0 18px;
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-left: 5px solid var(--brand);
+      border-radius: 6px;
+      background: #fff;
+    }
+    .term h3 { margin-top: 0; }
+    .term-meta { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
+    .pill { padding: 3px 8px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: var(--panel); font-size: .88rem; }
+    .prefix-list { margin: 0; padding-left: 20px; }
+    .muted { color: var(--muted); }
+    .lang { color: var(--muted); font-size: .86em; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+    .quality-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 10px;
+      margin: 12px 0 16px;
+    }
+    .quality-stat {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+    }
+    .quality-stat strong {
+      display: block;
+      color: var(--brand-dark);
+      font-size: 1.45rem;
+      line-height: 1.1;
+    }
+    .quality-section {
+      margin: 10px 0;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+    }
+    .quality-section summary {
+      cursor: pointer;
+      padding: 10px 12px;
+      color: var(--brand-dark);
+      font-weight: 700;
+      background: var(--panel);
+    }
+    .quality-list {
+      margin: 0;
+      padding: 8px 12px 12px 30px;
+    }
+    .quality-list li { margin: 5px 0; }
+    .quality-badge {
+      display: inline-block;
+      min-width: 58px;
+      margin-right: 6px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-align: center;
+    }
+    .quality-badge.error { color: #8a1f1f; background: #fde7e7; }
+    .quality-badge.warning { color: #6f5600; background: #fff1bd; }
+    .agent {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+    }
+    .agent-name {
+      display: block;
+      color: var(--brand-dark);
+      font-size: 1.02rem;
+      line-height: 1.25;
+    }
+    .agent-role {
+      display: inline-block;
+      margin: 7px 0 8px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #e5f0f1;
+      color: var(--brand-dark);
+      font-size: .8rem;
+      font-weight: 650;
+    }
+    .agent-affiliation {
+      min-height: 1.35em;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+    .agent-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .icon-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--brand-dark);
+    }
+    .icon-link:hover {
+      border-color: var(--brand);
+      text-decoration: none;
+    }
+    .icon-link svg { width: 18px; height: 18px; display: block; }
+    .orcid-icon text {
+      font: 700 8px "Segoe UI", Arial, sans-serif;
+      fill: #fff;
+    }
+    .missing-mandatory th,
+    .missing-mandatory td,
+    .agent.missing-mandatory { background: #fde7e7; border-color: #d98a8a; }
+    .missing-optional th,
+    .missing-optional td,
+    .agent.missing-optional { background: #fff6d8; border-color: #d7bd67; }
+    .downloads,
+    .used-list { margin: 0; padding-left: 20px; }
+    .used-list li,
+    .downloads li { margin: 6px 0; }
+    .relation { color: var(--muted); font-size: .9rem; }
+    .visualization-panel {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      overflow: hidden;
+    }
+    .visualization-toolbar { border-bottom: 1px solid var(--line); background: var(--page-bg, #fff); }
+    .visualization-actions {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px 16px; padding: 10px 14px;
+    }
+    .graph-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 20px; min-width: 0; }
+    .graph-tools { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+    .visualization-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 32px;
+      color: var(--ink);
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .visualization-toggle input {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--brand);
+      cursor: pointer;
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .graph-tool { display: inline-flex; align-items: center; justify-content: center; gap: 4px; box-sizing: border-box; width: 34px; height: 34px; padding: 0; border: 1px solid transparent; border-radius: 4px; background: transparent; color: var(--brand-dark); cursor: pointer; }
+    .graph-tool svg { flex-shrink: 0; pointer-events: none; }
+    .graph-tool:hover, .graph-tool[aria-pressed="true"], .graph-export[open] > summary { background: var(--panel); border-color: var(--line); }
+    .graph-tool:focus-visible, .graph-legend > summary:focus-visible, .graph-export-options button:focus-visible, #show-entire-graph:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+    .graph-tool .graph-exit-icon, .graph-tool[aria-pressed="true"] .graph-enter-icon { display: none; }
+    .graph-tool[aria-pressed="true"] .graph-exit-icon { display: inline-flex; }
+    .graph-tool .graph-enter-icon { display: inline-flex; }
+    .graph-export { position: relative; margin-left: 6px; padding-left: 10px; border-left: 1px solid var(--line); }
+    .graph-export > summary { width: 48px; list-style: none; }
+    .graph-export > summary::-webkit-details-marker, .graph-legend > summary::-webkit-details-marker { display: none; }
+    .graph-export-options { position: absolute; z-index: 20; right: 0; top: calc(100% + 6px); width: 174px; padding: 4px; border: 1px solid var(--line); border-radius: 6px; background: var(--page-bg, #fff); box-shadow: 0 6px 20px #0002; }
+    .graph-export-options button { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 0; border-radius: 3px; padding: 9px 10px; background: transparent; color: var(--ink); font: inherit; font-size: 13px; cursor: pointer; }
+    .graph-export-options button:hover { background: var(--panel); }
+    .graph-export-options span { color: var(--muted); font-size: 11px; }
+    .graph-focus-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; padding: 9px 14px; border-top: 1px solid var(--line); background: var(--panel); }
+    .graph-focus-bar[hidden] { display: none; }
+    .graph-focus-description { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
+    .graph-focus-label { color: var(--muted); font-size: 12px; }
+    #graph-focus-title { font-size: 13px; font-weight: 600; overflow-wrap: anywhere; min-width: 0; color: var(--brand-dark); }
+    #show-entire-graph { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; gap: 6px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--page-bg, #fff); color: var(--brand-dark); font: inherit; font-size: 12px; cursor: pointer; }
+    #show-entire-graph:hover { border-color: var(--brand); }
+    .graph-legend { border-top: 1px solid var(--line); background: var(--panel); }
+    .graph-legend > summary { display: flex; align-items: center; gap: 7px; width: fit-content; padding: 8px 14px; font-size: 12px; font-weight: 600; color: var(--brand-dark); cursor: pointer; list-style: none; }
+    .graph-legend > summary svg { width: 14px; height: 14px; transform: rotate(-90deg); }
+    .graph-legend[open] > summary svg { transform: rotate(0); }
+    .graph-legend-body { display: grid; gap: 10px; padding: 0 14px 12px; }
+    .graph-legend-row { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: baseline; gap: 12px; }
+    .graph-legend-label { color: var(--muted); font-size: 11px; font-weight: 600; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 18px;
+    }
+    .graph-type-legend { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); width: 100%; max-width: 660px; gap: 6px 12px; }
+    .ontology-legend { flex-basis: 100%; min-width: 0; }
+    .ontology-legend .legend-item { min-width: 0; max-width: 100%; }
+    .ontology-legend-name { overflow-wrap: anywhere; }
+    .ontology-swatch { width: 10px; height: 10px; flex-shrink: 0; border: 1px solid var(--swatch-border); background: var(--swatch-color); border-radius: 2px; }
+    .legend-dot {
+      width: 18px;
+      height: 10px;
+      flex-shrink: 0;
+      border-radius: 3px;
+      display: inline-block;
+      border: 1px solid rgba(32, 33, 36, .25);
+    }
+    .legend-dot.class { background: var(--brand); border-color: var(--brand-dark); }
+    .legend-dot.literal { background: var(--page-bg, #fff); border-color: var(--brand); border-radius: 0; }
+    .legend-dot.object-property { width: 24px; height: 0; border: 0; border-top: 1.5px dashed currentColor; border-radius: 0; }
+    .legend-dot.datatype-property {
+      width: 24px;
+      height: 0;
+      border: 0;
+      border-top: 2px dotted currentColor;
+      border-radius: 0;
+    }
+    .legend-dot.equivalent-class { width: 24px; height: 4px; border: 0; border-top: 1px solid currentColor; border-bottom: 1px solid currentColor; border-radius: 0; }
+    .layout-button {
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      background: #fff;
+      color: var(--brand-dark);
+      padding: 5px 9px;
+      cursor: pointer;
+      font: inherit;
+      font-size: .9rem;
+    }
+    .layout-button:hover { border-color: var(--brand); }
+    .visualization-panel:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      border: 0;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+    }
+    .visualization-panel:fullscreen .visualization-stage {
+      flex: 1 1 auto;
+      height: auto;
+      min-height: 0;
+    }
+    .visualization-panel:fullscreen #ontology-graph { height: 100%; min-height: 0; }
+    .visualization-panel:fullscreen .visualization-toolbar {
+      flex: 0 0 auto;
+    }
+    .visualization-stage {
+      display: flex;
+      min-height: 460px;
+      height: min(78vh, 860px);
+    }
+    #ontology-graph {
+      position: relative;
+      flex: 1 1 auto;
+      min-width: 0;
+      height: min(78vh, 860px);
+      min-height: 460px;
+      background:
+        linear-gradient(rgba(15, 68, 73, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(15, 68, 73, .045) 1px, transparent 1px),
+        #fbfcfd;
+      background-size: 28px 28px;
+    }
+    .graph-node-links { position:absolute; inset:0; overflow:hidden; pointer-events:none; z-index:5; }
+    .graph-node-link { position:absolute; display:grid; place-items:center; width:22px; height:22px; box-sizing:border-box; border-radius:3px; color:#fff; background:transparent; pointer-events:auto; transform-origin:center; }
+    .graph-node-link:hover, .graph-node-link:focus-visible { color:#fff; background:rgba(0,0,0,.22); outline:2px solid #fff; outline-offset:1px; }
+    .graph-node-link svg { pointer-events:none; }
+    @media (max-width: 600px) {
+      .visualization-actions { gap: 6px; padding: 8px 10px; }
+      .graph-filters { width: 100%; gap: 4px 16px; }
+      .graph-tools { margin-left: 0; }
+      .graph-export-options { left: 0; right: auto; }
+      .graph-legend-row { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+      .graph-focus-bar { flex-wrap: wrap; padding: 9px 10px; }
+      .graph-legend-body { padding-inline: 10px; }
+    }
+    @media print { .graph-node-links, .graph-focus-bar { display:none; } }
+    .datatype-inspector {
+      flex: 0 0 310px;
+      width: 310px;
+      padding: 16px;
+      border-left: 1px solid var(--line);
+      background: #fff;
+      overflow: auto;
+    }
+    .datatype-inspector[hidden] { display: none; }
+    .datatype-inspector-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+    .datatype-inspector h3 {
+      margin: 0;
+      color: var(--brand-dark);
+      font-size: 1rem;
+    }
+    .datatype-inspector-route {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: .86rem;
+      overflow-wrap: anywhere;
+    }
+    .datatype-inspector-close {
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1.3rem;
+      line-height: 1;
+    }
+    .datatype-inspector-close:hover { color: var(--brand-dark); }
+    .datatype-inspector-list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+    .datatype-inspector-list li { border-top: 1px solid var(--line); }
+    .datatype-inspector-list a {
+      display: block;
+      padding: 9px 2px;
+      color: var(--brand-dark);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    .datatype-inspector-list a:hover { color: var(--accent-dark); }
+    .datatype-inspector-list small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: .78rem;
+    }
+    .visualization-fallback {
+      padding: 14px;
+      color: var(--muted);
+      border-top: 1px solid var(--line);
+    }
+    footer { padding: 20px 0; color: var(--muted); border-top: 1px solid var(--line); }
+    @media (max-width: 700px) {
+      .wrap { width: min(100% - 24px, 1180px); }
+      .hero { padding: 28px 0 24px; }
+      .doc-figure img { padding: 10px; max-height: 62vh; }
+      .page { display: block; padding-top: 18px; }
+      aside.toc { position: static; max-height: none; margin-bottom: 22px; }
+      .visualization-stage { display: block; min-height: 0; height: auto; }
+      #ontology-graph { min-height: 380px; height: 65vh; }
+      .datatype-inspector {
+        width: auto;
+        max-height: 300px;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .visualization-actions { justify-content: flex-start; }
+      th, td { display: block; width: 100%; }
+      th { border-bottom: 0; }
+    }
+  </style>
+{% include 'theme.html.j2' %}
+</head>
+<body>
+  <header>
+    <div class="wrap hero">
+      <div class="hero-copy">
+        <h1>{{ page_title }}</h1>
+        {% if page_description %}<p class="subtitle">{{ page_description }}</p>{% endif %}
+        <div class="hero-meta">
+          {% if doc.version %}<span class="version">Version {{ doc.version }}</span>{% endif %}
+          {% if doc.preferred_prefix %}<span class="hero-stat">Prefix {{ doc.preferred_prefix }}</span>{% endif %}
+          <span class="hero-stat">{{ doc.classes|length }} classes</span>
+          <span class="hero-stat">{{ doc.object_properties|length + doc.datatype_properties|length }} properties</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap page{% if visualization.counts.nodes %} page-with-graph{% endif %}">
+    <aside class="toc" aria-label="Table of contents">
+      <strong class="toc-title">Table of Contents</strong>
+      {% set de = page_language.lower().split('-')[0] == 'de' %}
+      <div class="toc-search" role="search" hidden>
+        <div class="toc-search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+          <input type="search" autocomplete="off" aria-controls="toc-list" aria-label="{{ 'Inhaltsverzeichnis durchsuchen' if de else 'Search table of contents' }}" placeholder="{{ 'Ontologie durchsuchen' if de else 'Search ontology' }}">
+          {% set clear = 'Suche zurücksetzen' if de else 'Clear search' %}
+          <button type="button" title="{{ clear }}" aria-label="{{ clear }}" hidden>&times;</button>
+        </div>
+        {% set scope_label = 'Suchbereiche' if de else 'Search in' %}
+        <details class="toc-scopes">
+          <summary>{{ scope_label }} <span></span></summary>
+          <fieldset aria-label="{{ scope_label }}">
+            <label><input type="checkbox" value="names" checked>{{ 'Namen und Labels' if de else 'Names and labels' }}</label>
+            <label><input type="checkbox" value="iris" checked>{{ 'IRIs und Kurzformen' if de else 'IRIs and prefixed names' }}</label>
+            <label><input type="checkbox" value="prose" checked>{{ 'Beschreibungen und Kommentare' if de else 'Descriptions and comments' }}</label>
+            {% if has_markdown %}<label><input type="checkbox" value="markdown" checked>{{ 'Markdown-Kapitel' if de else 'Markdown chapters' }}</label>{% endif %}
+          </fieldset>
+        </details>
+        <span class="toc-search-count" role="status" data-empty="{{ 'Bitte einen Suchbereich auswählen.' if de else 'Select a search area.' }}" data-none="{{ 'Keine Treffer' if de else 'No matches' }}" data-one="{{ 'Treffer' if de else 'match' }}" data-many="{{ 'Treffer' if de else 'matches' }}"></span>
+      </div>
+      <ul id="toc-list">
+        <li class="toc-group"><a class="toc-heading" href="#metadata">Metadata</a></li>
+        {% if doc.creators or doc.contributors %}<li><a href="#agents">Creators and Contributors</a></li>{% endif %}
+        {% if doc.hero_figures %}<li><a href="#figures">Figures</a></li>{% endif %}
+        {% if quality_report %}<li><a href="#quality-report">Quality Report</a></li>{% endif %}
+        {% if doc.prefixes %}<li><a href="#prefixes">Namespace Prefixes</a></li>{% endif %}
+        {% if doc.used_ontologies %}<li><a href="#used-ontologies">Used Ontologies</a></li>{% endif %}
+        {% if doc.downloads %}<li><a href="#downloads">Downloads</a></li>{% endif %}
+        {% if visualization.counts.nodes %}<li><a href="#visualization">Visualization</a></li>{% endif %}
+        <li><a href="#overview">Overview</a></li>
+        {{ toc_section("Classes", "classes", doc.classes) }}
+        {{ toc_section("Object Properties", "object-properties", doc.object_properties) }}
+        {{ toc_section("Datatype Properties", "datatype-properties", doc.datatype_properties) }}
+        {{ toc_section("Annotation Properties", "annotation-properties", doc.annotation_properties) }}
+        {{ toc_section("RDF Properties", "rdf-properties", doc.rdf_properties) }}
+      </ul>
+    </aside>
+
+    <main>
+    <section id="metadata">
+      <h2>Ontology Metadata</h2>
+      <table>
+        {% if doc.uri %}
+        <tr><th>URI</th><td><a href="{{ doc.uri }}">{{ doc.uri }}</a></td></tr>
+        {% endif %}
+        {% for item in doc.metadata %}
+        <tr class="{% if item.status == 'mandatory-missing' %}missing-mandatory{% elif item.status == 'optional-missing' %}missing-optional{% endif %}">
+          <th>{{ item.label }}</th>
+          <td>{{ value_list(item.values, item.label if not item.status else '') }}</td>
+        </tr>
+        {% endfor %}
+      </table>
+    </section>
+
+    {% if doc.creators or doc.contributors %}
+    <section id="agents">
+      <h2>Creators and Contributors</h2>
+      <div class="grid">
+        {% for agent in doc.creators %}
+        <div class="agent {% if agent.status == 'mandatory-missing' %}missing-mandatory{% elif agent.status == 'optional-missing' %}missing-optional{% endif %}">
+          <strong class="agent-name">{{ agent.name }}</strong>
+          <span class="agent-role">Creator</span>
+          {% if agent.affiliation %}<div class="agent-affiliation">{{ agent.affiliation }}</div>{% endif %}
+          {% if agent.email or agent.identifier %}
+          <div class="agent-links">
+            {% if agent.email %}
+            <a class="icon-link" href="{{ agent.email }}" title="Email {{ agent.name }}" aria-label="Email {{ agent.name }}">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v.4l8 4.8 8-4.8V8H4Zm0 2.7V16h16v-5.3l-8 4.8-8-4.8Z"/>
+              </svg>
+            </a>
+            {% endif %}
+            {% if agent.identifier %}
+            <a class="icon-link" href="{{ agent.identifier }}" title="ORCID {{ agent.name }}" aria-label="ORCID {{ agent.name }}">
+              <svg class="orcid-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#A6CE39"/>
+                <text x="5.3" y="15.1">iD</text>
+              </svg>
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+        {% for agent in doc.contributors %}
+        <div class="agent {% if agent.status == 'mandatory-missing' %}missing-mandatory{% elif agent.status == 'optional-missing' %}missing-optional{% endif %}">
+          <strong class="agent-name">{{ agent.name }}</strong>
+          <span class="agent-role">Contributor</span>
+          {% if agent.affiliation %}<div class="agent-affiliation">{{ agent.affiliation }}</div>{% endif %}
+          {% if agent.email or agent.identifier %}
+          <div class="agent-links">
+            {% if agent.email %}
+            <a class="icon-link" href="{{ agent.email }}" title="Email {{ agent.name }}" aria-label="Email {{ agent.name }}">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="currentColor" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Zm0 2v.4l8 4.8 8-4.8V8H4Zm0 2.7V16h16v-5.3l-8 4.8-8-4.8Z"/>
+              </svg>
+            </a>
+            {% endif %}
+            {% if agent.identifier %}
+            <a class="icon-link" href="{{ agent.identifier }}" title="ORCID {{ agent.name }}" aria-label="ORCID {{ agent.name }}">
+              <svg class="orcid-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="11" fill="#A6CE39"/>
+                <text x="5.3" y="15.1">iD</text>
+              </svg>
+            </a>
+            {% endif %}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if doc.hero_figures %}
+    <section id="figures" class="figure-showcase" aria-label="Ontology diagrams">
+      <h2>Figures</h2>
+      <div class="figure-stack">
+        {% for figure in doc.hero_figures %}
+        <figure class="doc-figure">
+          <a href="#figure-zoom-{{ loop.index }}" aria-label="Open larger view of {{ figure.title }}">
+            <img src="{{ figure.src }}" alt="{{ figure.alt }}">
+          </a>
+          <figcaption>{{ figure.title }}</figcaption>
+        </figure>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+
+    {% if quality_report %}
+    <section id="quality-report">
+      <h2>Quality Report</h2>
+      <div class="quality-summary">
+        <div class="quality-stat"><strong>{{ doc.quality.issue_count }}</strong>Total issues</div>
+        <div class="quality-stat"><strong>{{ doc.quality.error_count }}</strong>Errors</div>
+        <div class="quality-stat"><strong>{{ doc.quality.warning_count }}</strong>Warnings</div>
+      </div>
+      {% if doc.quality.sections %}
+        {% for section in doc.quality.sections %}
+        <details class="quality-section" open>
+          <summary>{{ section.title }} ({{ section.count }})</summary>
+          <ul class="quality-list">
+            {% for issue in section.issues %}
+            <li>
+              <span class="quality-badge {{ issue.severity }}">{{ issue.severity }}</span>
+              {% if issue.href %}<a href="{{ issue.href }}">{{ issue.message }}</a>{% else %}{{ issue.message }}{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </details>
+        {% endfor %}
+      {% else %}
+      <p class="muted">No quality issues found.</p>
+      {% endif %}
+    </section>
+    {% endif %}
+
+    {% if doc.prefixes %}
+    <section id="prefixes">
+      <h2>Namespace Prefixes</h2>
+      <ul class="prefix-list">
+        {% for prefix, uri in doc.prefixes %}
+        <li><span class="curie">{{ prefix or "(default)" }}</span> {{ uri }}</li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if doc.used_ontologies %}
+    <section id="used-ontologies">
+      <h2>Used Ontologies</h2>
+      <ul class="used-list">
+        {% for item in doc.used_ontologies %}
+        <li><a href="{{ item.uri }}">{{ item.label }}</a> <span class="relation">{{ item.relation }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if doc.downloads %}
+    <section id="downloads">
+      <h2>Downloads</h2>
+      <ul class="downloads">
+        {% for download in doc.downloads %}
+        <li><a href="{{ download.href }}">{{ download.label }}</a> <span class="relation">{{ download.media_type or download.format }}</span></li>
+        {% endfor %}
+      </ul>
+    </section>
+    {% endif %}
+
+    {% if visualization.counts.nodes %}
+    {% from "graph_icons.html.j2" import graph_icon %}
+    <section id="visualization">
+      <h2>Visualization</h2>
+      <div class="visualization-panel">
+        <div class="visualization-toolbar">
+          <div class="visualization-actions">
+            <div class="graph-filters" role="group" aria-label="Visible elements">
+              <label class="visualization-toggle" title="Show or hide datatype properties and literal nodes">
+                <input type="checkbox" id="toggle-datatype-properties" checked>
+                Datatype properties
+              </label>
+              <label class="visualization-toggle">
+                <input type="checkbox" id="toggle-external-references" checked>
+                External references
+              </label>
+            </div>
+            <div class="graph-tools" role="group" aria-label="Graph tools">
+              <button class="graph-tool" type="button" id="zoom-out-graph" title="Zoom out" aria-label="Zoom out">{{ graph_icon('zoom-out') }}</button>
+              <button class="graph-tool" type="button" id="zoom-in-graph" title="Zoom in" aria-label="Zoom in">{{ graph_icon('zoom-in') }}</button>
+              <button class="graph-tool" type="button" id="fit-graph" title="Fit entire graph" aria-label="Fit entire graph">{{ graph_icon('fit') }}</button>
+              <button class="graph-tool" type="button" id="reset-graph-layout" title="Reset layout" aria-label="Reset layout">{{ graph_icon('reset') }}</button>
+              <button class="graph-tool" type="button" id="fullscreen-graph" title="Fullscreen" aria-label="Fullscreen" aria-pressed="false"><span class="graph-enter-icon">{{ graph_icon('maximize') }}</span><span class="graph-exit-icon">{{ graph_icon('minimize') }}</span></button>
+              <details class="graph-export" id="graph-export">
+                <summary class="graph-tool" title="Export graph" aria-label="Export graph">{{ graph_icon('download') }}{{ graph_icon('chevron') }}</summary>
+                <div class="graph-export-options">
+                  <button type="button" id="export-graph-png" aria-label="Export PNG">PNG <span>3x</span></button>
+                  <button type="button" id="export-graph-jpg" aria-label="Export JPG">JPG <span>3x</span></button>
+                  <button type="button" id="export-graph-svg" aria-label="Export SVG">SVG <span>Vector</span></button>
+                </div>
+              </details>
+            </div>
+          </div>
+          <div class="graph-focus-bar" id="graph-focus-bar" hidden>
+            <div class="graph-focus-description"><span class="graph-focus-label">Neighborhood</span><strong id="graph-focus-title" role="status"></strong></div>
+            <button type="button" id="show-entire-graph" title="Show the entire graph" disabled>{{ graph_icon('back') }}Entire graph</button>
+          </div>
+          <details class="graph-legend" open>
+            <summary>{{ graph_icon('chevron') }}Legend</summary>
+            <div class="graph-legend-body">
+              <div class="graph-legend-row">
+                <span class="graph-legend-label">Elements</span>
+                <div class="legend graph-type-legend" aria-label="Visualization legend">
+                  <span class="legend-item"><span class="legend-dot class"></span>rdfs:Class</span>
+                  <span class="legend-item"><span class="legend-dot literal"></span>rdfs:Literal</span>
+                  <span class="legend-item subclass-legend"><svg width="24" height="14" viewBox="0 0 32 14" aria-hidden="true"><path d="M1 7H25" fill="none" stroke="currentColor" stroke-width="1.55"/><path d="M24 3L31 7L24 11Z" fill="currentColor"/></svg>rdfs:subClassOf</span>
+                  <span class="legend-item"><span class="legend-dot object-property"></span>owl:ObjectProperty</span>
+                  <span class="legend-item"><span class="legend-dot datatype-property"></span>owl:DatatypeProperty</span>
+                  <span class="legend-item"><span class="legend-dot equivalent-class"></span>owl:equivalentClass</span>
+                </div>
+              </div>
+              <div class="graph-legend-row">
+                <span class="graph-legend-label">Ontologies</span>
+                <div class="legend ontology-legend" aria-label="Ontology colors">
+                  {% for ontology in visualization.ontologies %}
+                  <span class="legend-item" data-ontology="{{ ontology.uri }}" title="{{ ontology.uri }}"><span class="ontology-swatch" style="--swatch-color:{{ ontology.color }};--swatch-border:{{ ontology.border }}"></span><span class="ontology-legend-name">{{ ontology.label.rstrip('/#').rsplit('/', 1)[-1] if '://' in ontology.label else ontology.label }}</span></span>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+        <div class="visualization-stage">
+          <div id="ontology-graph" role="region" aria-label="Ontology graph visualization"></div>
+          {% include "graph_icons.html.j2" %}
+          <aside class="datatype-inspector" id="datatype-inspector" aria-live="polite" hidden>
+            <div class="datatype-inspector-header">
+              <h3 id="datatype-inspector-title">Datatype properties</h3>
+              <button class="datatype-inspector-close" id="datatype-inspector-close" type="button" aria-label="Close datatype property details" title="Close">&times;</button>
+            </div>
+            <p class="datatype-inspector-route" id="datatype-inspector-route"></p>
+            <ul class="datatype-inspector-list" id="datatype-inspector-list"></ul>
+          </aside>
+        </div>
+        <div class="visualization-fallback" id="visualization-fallback">
+          Loading graph visualization.
+        </div>
+      </div>
+    </section>
+    {% endif %}
+
+    <section id="overview">
+      <h2>Overview</h2>
+      <table>
+        <tr><th>Classes</th><td>{{ doc.classes|length }}</td></tr>
+        <tr><th>Object properties</th><td>{{ doc.object_properties|length }}</td></tr>
+        <tr><th>Datatype properties</th><td>{{ doc.datatype_properties|length }}</td></tr>
+        <tr><th>Annotation properties</th><td>{{ doc.annotation_properties|length }}</td></tr>
+        <tr><th>RDF properties</th><td>{{ doc.rdf_properties|length }}</td></tr>
+      </table>
+    </section>
+
+    <section id="cross-reference">
+      <h2>Cross-reference</h2>
+      <p class="muted">This section provides details for each class and property defined by the ontology.</p>
+      {{ render_section("Classes", doc.classes) }}
+      {{ render_section("Object Properties", doc.object_properties) }}
+      {{ render_section("Datatype Properties", doc.datatype_properties) }}
+      {{ render_section("Annotation Properties", doc.annotation_properties) }}
+      {{ render_section("RDF Properties", doc.rdf_properties) }}
+    </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <div class="wrap">Generated by OntoLens.</div>
+  </footer>
+  {% for figure in doc.hero_figures %}
+  <div id="figure-zoom-{{ loop.index }}" class="figure-zoom" role="dialog" aria-label="{{ figure.title }}">
+    <a href="#" aria-label="Close larger view"></a>
+    <img src="{{ figure.src }}" alt="{{ figure.alt }}">
+    <span aria-hidden="true">&times;</span>
+  </div>
+  {% endfor %}
+  {% if visualization.counts.nodes %}
+  <script>
+    window.ontolensVisualization = {{ visualization|tojson }};
+    (function () {
+      const fallback = document.getElementById("visualization-fallback");
+      const container = document.getElementById("ontology-graph");
+      if (!container || typeof cytoscape === "undefined") {
+        return;
+      }
+      fallback.hidden = true;
+      const labelContext = document.createElement("canvas").getContext("2d");
+      function classNodeWidth(node) {
+        labelContext.font = "600 10px system-ui, sans-serif";
+        const label = String(node.data("label") || "");
+        const longestWord = Math.max(0, ...label.split(/\s+/).map(word => labelContext.measureText(word).width));
+        return Math.max(48, longestWord, Math.min(160, labelContext.measureText(label).width)) + 32;
+      }
+      function neighborhoodLabel(node) {
+        const label = String(node.data("label") || "");
+        const namespace = node.data("ontology");
+        if (!/^https?:\/\//i.test(label) || !namespace || !label.startsWith(namespace)) return label;
+        const ontology = window.ontolensVisualization.ontologies.find(item => item.uri === namespace);
+        const prefix = String(ontology?.label || namespace).replace(/[/#]+$/, "").split("/").pop();
+        return `${prefix}:\n${label.slice(namespace.length)}`;
+      }
+      function neighborhoodNodeWidth(node) {
+        labelContext.font = "600 17px system-ui, sans-serif";
+        const label = node.hasClass("component-overview") ? overviewLabel(node) : neighborhoodLabel(node);
+        const longestWord = Math.max(0, ...label.split(/\s+/).map(word => labelContext.measureText(word).width));
+        const overview = node.hasClass("component-overview");
+        return Math.max(overview ? 72 : 100, longestWord, Math.min(overview ? 140 : 180, labelContext.measureText(label).width)) + (overview ? 24 : 32);
+      }
+      function overviewLabel(node) {
+        return OntolensGraphLayout.compactLabel(node.data(), window.ontolensVisualization.ontologies);
+      }
+      function neighborhoodEdgeLabel(edge) {
+        const label = String(edge.data("label") || "");
+        const href = edge.data("href") || "";
+        return label.length > 60 && href.startsWith("#") ? decodeURIComponent(href.slice(1)) : label;
+      }
+      const layoutOptions = {
+        name: "breadthfirst",
+        directed: true,
+        spacingFactor: 1.35,
+        padding: 34,
+        avoidOverlap: true,
+        nodeDimensionsIncludeLabels: true,
+        circle: false,
+        maximal: true
+      };
+      const cy = cytoscape({
+        container,
+        elements: window.ontolensVisualization.elements,
+        minZoom: 0.15,
+        maxZoom: 2.6,
+        wheelSensitivity: 0.18,
+        style: [
+          {
+            selector: "node",
+            style: {
+              "label": "data(label)",
+              "font-size": 10,
+              "font-weight": 600,
+              "text-wrap": "wrap",
+              "text-max-width": 160,
+              "text-valign": "center",
+              "text-halign": "center",
+              "color": "#fff",
+              "background-color": "data(color)",
+              "border-width": 1.5,
+              "border-color": "data(border)",
+              "shape": "round-rectangle",
+              "width": "label",
+              "height": 24,
+              "padding": "14px",
+              "text-margin-y": 1
+            }
+          },
+          {
+            selector: "node[kind = 'class'], node[kind = 'external-class']",
+            style: { "width": classNodeWidth, "text-margin-x": -16, "font-family": "system-ui, sans-serif" }
+          },
+          {
+            selector: "node[kind = 'literal']",
+            style: {
+              "background-color": "#fff",
+              "border-color": "#155c63",
+              "color": "#0f4449",
+              "shape": "rectangle",
+              "width": "label",
+              "height": 24,
+              "padding": "14px",
+              "font-size": 10
+            }
+          },
+          {
+            selector: "node[kind = 'missing-endpoint']",
+            style: {
+              "label": "",
+              "width": 24,
+              "height": 24
+            }
+          },
+          {
+            selector: "node[kind = 'external-class']",
+            style: {
+              "background-color": "data(color)",
+              "border-color": "data(border)",
+              "color": "#fff"
+            }
+          },
+          {
+            selector: "edge",
+            style: {
+              "curve-style": "bezier",
+              "control-point-distance": 28,
+              "control-point-weight": .5,
+              "target-arrow-shape": "triangle",
+              "target-arrow-color": "#111",
+              "line-color": "#111",
+              "width": 1.35,
+              "label": "data(label)",
+              "font-size": 10,
+              "font-family": "system-ui, sans-serif",
+              "text-wrap": "wrap",
+              "text-max-width": 150,
+              "text-overflow-wrap": "whitespace",
+              "line-height": 1.2,
+              "color": "#202124",
+              "text-background-color": "#fbfcfd",
+              "text-background-opacity": .92,
+              "text-background-padding": 3,
+              "text-rotation": "none",
+              "text-margin-y": -7
+            }
+          },
+          {
+            selector: "edge[edgeKind = 'subClassOf'], edge[edgeKind = 'subPropertyOf']",
+            style: {
+              "line-color": "#111",
+              "target-arrow-color": "#111",
+              "width": 1.55,
+              "line-style": "solid"
+            }
+          },
+          {
+            selector: "edge[edgeKind = 'subClassOf']",
+            style: { "label": "" }
+          },
+          {
+            selector: "edge[edgeKind = 'object-property']",
+            style: {
+              "line-color": "#0f4449",
+              "target-arrow-color": "#0f4449",
+              "line-style": "dashed"
+            }
+          },
+          {
+            selector: "edge[edgeKind = 'datatype-property']",
+            style: {
+              "line-color": "#66898c",
+              "target-arrow-color": "#66898c",
+              "line-style": "dotted",
+              "width": 1.65,
+              "color": "#315e62",
+              "font-size": 9,
+              "font-weight": 600,
+              "text-rotation": "none",
+              "text-margin-y": -11,
+              "text-background-color": "#ffffff",
+              "text-background-opacity": .96,
+              "text-background-padding": 4
+            }
+          },
+          {
+            selector: "edge[edgeKind = 'equivalent-class'], edge[edgeKind = 'equivalent-class-parallel']",
+            style: {
+              "curve-style": "segments",
+              "segment-distances": "data(offset)",
+              "segment-weights": .5,
+              "line-color": "#111",
+              "target-arrow-shape": "none",
+              "width": 1.3,
+              "line-style": "solid",
+              "text-rotation": "none",
+              "text-margin-y": -14
+            }
+          },
+          {
+            selector: "edge[edgeKind = 'equivalent'], edge[edgeKind = 'inverseOf']",
+            style: {
+              "line-color": "#111",
+              "target-arrow-color": "#111",
+              "line-style": "dashed"
+            }
+          },
+          {
+            selector: "node.neighborhood, node.component-overview",
+            style: {
+              "label": neighborhoodLabel,
+              "font-size": 17,
+              "font-family": "system-ui, sans-serif",
+              "width": neighborhoodNodeWidth,
+              "height": "label",
+              "padding": 12,
+              "text-max-width": 180,
+              "text-overflow-wrap": "whitespace"
+            }
+          },
+          {
+            selector: "node.component-overview",
+            style: { "label": overviewLabel, "text-max-width": 140, "padding": 8, "text-margin-x": -12 }
+          },
+          {
+            selector: "node.neighborhood[kind = 'missing-endpoint'], node.component-overview[kind = 'missing-endpoint']",
+            style: { "label": "", "width": 30, "height": 30 }
+          },
+          {
+            selector: "edge.neighborhood, edge.component-overview",
+            style: {
+              "label": neighborhoodEdgeLabel,
+              "font-size": 14,
+              "text-wrap": "wrap",
+              "text-max-width": 150,
+              "text-overflow-wrap": "whitespace",
+              "text-rotation": "none",
+              "text-margin-y": -10
+            }
+          },
+          { selector: "node:selected", style: { "border-width": 4, "border-color": "#111827", "background-blacken": -.06 } },
+          { selector: "edge[edgeKind = 'datatype-property']:selected", style: { "line-color": "#0f4449", "target-arrow-color": "#0f4449", "width": 3 } }
+        ],
+        layout: { name: "preset" }
+      });
+
+      const originalElements = window.ontolensVisualization.elements;
+      const panel = container.closest(".visualization-panel");
+      const datatypeToggle = document.getElementById("toggle-datatype-properties");
+      const externalToggle = document.getElementById("toggle-external-references");
+      const fullscreenButton = document.getElementById("fullscreen-graph");
+      const datatypeInspector = document.getElementById("datatype-inspector");
+      const datatypeInspectorTitle = document.getElementById("datatype-inspector-title");
+      const datatypeInspectorRoute = document.getElementById("datatype-inspector-route");
+      const datatypeInspectorList = document.getElementById("datatype-inspector-list");
+      const entireGraphButton = document.getElementById("show-entire-graph");
+      const focusTitle = document.getElementById("graph-focus-title");
+      const focusBar = document.getElementById("graph-focus-bar");
+      const exportMenu = document.getElementById("graph-export");
+      let focusId = null;
+      let activeLayout = null;
+      let layoutRevision = 0;
+      let resizeFrame = null;
+      let edgeLabelFrame = null;
+      let edgeLabelPositions = new Map();
+
+      function neighborhoodElements(elements, id) {
+        if (!id || !elements.nodes.some(node => node.data.id === id)) return elements;
+        const neighbors = new Set([id]);
+        elements.edges.forEach(edge => {
+          if (edge.data.source === id) neighbors.add(edge.data.target);
+          if (edge.data.target === id) neighbors.add(edge.data.source);
+        });
+        return {
+          nodes: elements.nodes.filter(node => neighbors.has(node.data.id)),
+          edges: elements.edges.filter(edge => neighbors.has(edge.data.source) && neighbors.has(edge.data.target))
+        };
+      }
+
+      function visibleElements() {
+        const showDatatypeProperties = datatypeToggle?.checked !== false;
+        const showExternalReferences = externalToggle?.checked !== false;
+        const nodes = originalElements.nodes.filter(function (node) {
+          return (showDatatypeProperties || node.data.kind !== "literal") &&
+            (showExternalReferences || node.data.kind !== "external-class");
+        });
+        const visibleNodeIds = new Set(nodes.map(function (node) { return node.data.id; }));
+        const edges = originalElements.edges.filter(function (edge) {
+          return (showDatatypeProperties || edge.data.edgeKind !== "datatype-property") && visibleNodeIds.has(edge.data.source) && visibleNodeIds.has(edge.data.target);
+        });
+        const connectedLiterals = new Set(edges.filter(edge => edge.data.edgeKind === "datatype-property").map(edge => edge.data.target));
+        const connectedNodes = nodes.filter(node => node.data.kind !== "literal" || connectedLiterals.has(node.data.id));
+        return neighborhoodElements({ nodes: connectedNodes, edges }, focusId);
+      }
+
+      function stopLayout() {
+        layoutRevision += 1;
+        cancelAnimationFrame(edgeLabelFrame);
+        edgeLabelFrame = null;
+        activeLayout?.stop();
+        activeLayout = null;
+        cy.stop();
+      }
+
+      function fitGraph(readable = true) {
+        if (!cy.nodes().length) return;
+        cy.resize();
+        cy.fit(cy.elements(), focusId ? 24 : 34);
+        const minimum = focusId || cy.elements().hasClass("component-overview") ? .75 : 1.1;
+        if (readable && cy.zoom() < minimum) {
+          cy.zoom(minimum);
+          cy.center(cy.elements());
+        }
+        if (focusId && cy.zoom() > 1.8) {
+          cy.zoom(1.8);
+          cy.center(cy.elements());
+        }
+      }
+
+      function changeGraphZoom(factor) {
+        cy.zoom({level: Math.max(cy.minZoom(), Math.min(cy.maxZoom(), cy.zoom() * factor)),
+          renderedPosition: {x: cy.width() / 2, y: cy.height() / 2}});
+      }
+
+      function runLayout() {
+        stopLayout();
+        cy.resize();
+        const revision = layoutRevision;
+        const disconnected = !focusId && cy.elements().components().length > 1;
+        cy.elements().toggleClass("component-overview", disconnected);
+        // Tile disconnected classes instead of placing every root in one row.
+        const options = focusId || disconnected
+          ? OntolensGraphLayout.networkOptions(cy.nodes().length, disconnected) : layoutOptions;
+        activeLayout = cy.layout({
+          ...options, fit: false, animate: false,
+          stop: function () {
+            if (revision !== layoutRevision) return;
+            activeLayout = null;
+            if (disconnected) OntolensGraphLayout.distributeNodes(cy, cy.width(), cy.height());
+            else OntolensGraphLayout.separateNodes(cy);
+            positionEdgeLabels();
+            fitGraph();
+          }
+        });
+        activeLayout.run();
+      }
+
+      function positionEdgeLabels() {
+        const labels = [];
+        const obstacles = cy.nodes().map(node => node.boundingBox({includeLabels: true, includeOverlays: false}));
+        cy.edges().forEach(edge => {
+          edge.removeStyle("curve-style segment-weights segment-distances edge-distances text-margin-x text-margin-y");
+          const text = focusId ? neighborhoodEdgeLabel(edge) : String(edge.style("label") || "");
+          if (!text) return;
+          const fontSize = parseFloat(edge.style("font-size"));
+          const weight = edge.style("font-weight");
+          const lines = graphTextLines(text, 150, fontSize, weight);
+          const width = Math.max(...lines.map(line => labelContext.measureText(line).width)) + 12;
+          labels.push({id: edge.id(), origin: edge.midpoint(),
+            source: edge.source().position(), target: edge.target().position(),
+            width,
+            height: lines.length * fontSize * 1.2 + 12});
+        });
+        edgeLabelPositions = OntolensGraphLabels.placeLabels(labels, obstacles);
+        edgeLabelPositions.forEach((point, id) => {
+          const edge = cy.getElementById(id);
+          const bend = OntolensGraphLabels.bendThrough(edge.source().position(), edge.target().position(), point);
+          if (bend && edge.source().id() !== edge.target().id() && !String(edge.data("edgeKind")).startsWith("equivalent")) {
+            edge.style({"curve-style": "segments", "edge-distances": "node-position",
+              "segment-weights": bend.weight, "segment-distances": bend.distance});
+          }
+          const midpoint = edge.midpoint();
+          edge.style({"text-margin-x": point.x - midpoint.x, "text-margin-y": point.y - midpoint.y});
+        });
+      }
+
+      function scheduleEdgeLabels() {
+        if (activeLayout || edgeLabelFrame !== null) return;
+        edgeLabelFrame = requestAnimationFrame(() => {
+          edgeLabelFrame = null;
+          if (!activeLayout) positionEdgeLabels();
+        });
+      }
+
+      function refreshGraph() {
+        stopLayout();
+        closeDatatypeInspector();
+        cy.elements().remove();
+        cy.add(visibleElements());
+        if (focusId && cy.getElementById(focusId).empty()) focusId = null;
+        entireGraphButton.disabled = !focusId;
+        focusBar.hidden = !focusId;
+        focusTitle.textContent = focusId ? cy.getElementById(focusId).data("label") : "";
+        cy.elements().toggleClass("neighborhood", Boolean(focusId));
+        if (focusId) cy.getElementById(focusId).select();
+        rebuildNodeLinks();
+        const visible = new Set(cy.nodes().map(node => node.data("ontology")));
+        panel.querySelectorAll(".ontology-legend [data-ontology]").forEach(item => {
+          item.style.display = visible.has(item.dataset.ontology) ? "" : "none";
+        });
+        runLayout();
+      }
+
+      const nodeLinks = document.createElement("div");
+      nodeLinks.className = "graph-node-links";
+      container.append(nodeLinks);
+      const linkElements = new Map();
+      let linkFrame = null;
+      function positionNodeLinks() {
+        linkFrame = null;
+        const zoom = cy.zoom();
+        linkElements.forEach((link, id) => {
+          const node = cy.getElementById(id);
+          if (node.empty()) { link.hidden = true; return; }
+          const box = node.renderedBoundingBox({includeLabels:false, includeOverlays:false});
+          link.hidden = box.x2 < 0 || box.y2 < 0 || box.x1 > cy.width() || box.y1 > cy.height();
+          link.style.left = `${box.x2 - 19 * zoom}px`;
+          link.style.top = `${(box.y1 + box.y2) / 2}px`;
+          link.style.transform = `translate(-50%, -50%) scale(${zoom})`;
+        });
+      }
+      function scheduleNodeLinks() {
+        if (linkFrame === null) linkFrame = requestAnimationFrame(positionNodeLinks);
+      }
+      function rebuildNodeLinks() {
+        nodeLinks.replaceChildren();
+        linkElements.clear();
+        cy.nodes().forEach(node => {
+          if (!["class", "external-class"].includes(node.data("kind"))) return;
+          const href = node.data("href") || node.id();
+          if (!href.startsWith("#") && !/^https?:\/\//i.test(href)) return;
+          const link = document.createElement("a");
+          link.className = "graph-node-link";
+          link.href = href;
+          link.title = `${href.startsWith("#") ? "Open documentation" : "Open external reference"}: ${node.data("label")}`;
+          link.setAttribute("aria-label", link.title);
+          link.append(document.getElementById("graph-document-icon").content.cloneNode(true));
+          if (!href.startsWith("#")) { link.target = "_blank"; link.rel = "noopener noreferrer"; }
+          ["pointerdown", "mousedown", "touchstart", "dblclick"].forEach(type => link.addEventListener(type, event => event.stopPropagation()));
+          link.addEventListener("click", async event => {
+            event.stopPropagation();
+            if (href.startsWith("#") && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+              event.preventDefault();
+              if (document.fullscreenElement === panel) await document.exitFullscreen();
+              window.location.hash = href;
+              document.getElementById(decodeURIComponent(href.slice(1)))?.scrollIntoView({block:"start"});
+            }
+          });
+          nodeLinks.append(link);
+          linkElements.set(node.id(), link);
+        });
+        scheduleNodeLinks();
+      }
+      cy.on("render pan zoom position layoutstop resize", scheduleNodeLinks);
+      cy.on("drag dragfree", "node", scheduleEdgeLabels);
+      new ResizeObserver(() => {
+        cy.resize();
+        scheduleNodeLinks();
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame = requestAnimationFrame(() => {
+          if (!activeLayout) {
+            if (focusId || cy.elements().hasClass("component-overview")) runLayout();
+            else fitGraph();
+          }
+        });
+      }).observe(container);
+      rebuildNodeLinks();
+      runLayout();
+      entireGraphButton.addEventListener("click", () => { focusId = null; refreshGraph(); });
+
+      function ontologyLegendEntries() {
+        const visible = new Set(cy.nodes().map(node => node.data("ontology")));
+        return (window.ontolensVisualization.ontologies || []).filter(item => visible.has(item.uri));
+      }
+
+      function closeDatatypeInspector() {
+        if (datatypeInspector) {
+          datatypeInspector.hidden = true;
+        }
+        window.setTimeout(function () { cy.resize(); }, 0);
+      }
+
+      function showDatatypeInspector(edge) {
+        const properties = edge.data("properties") || [];
+        if (!datatypeInspector || !datatypeInspectorTitle || !datatypeInspectorRoute || !datatypeInspectorList || !properties.length) {
+          return;
+        }
+        const count = properties.length;
+        datatypeInspectorTitle.textContent = `${count} datatype ${count === 1 ? "property" : "properties"}`;
+        datatypeInspectorRoute.textContent = `${edge.source().data("label")} -> ${edge.target().data("label")}`;
+        datatypeInspectorList.replaceChildren(...properties.map(function (property) {
+          const item = document.createElement("li");
+          const link = document.createElement("a");
+          const curie = document.createElement("small");
+          link.href = property.href;
+          link.textContent = property.title;
+          curie.textContent = property.curie;
+          link.appendChild(curie);
+          item.appendChild(link);
+          return item;
+        }));
+        datatypeInspector.hidden = false;
+        window.setTimeout(function () {
+          fitGraph();
+        }, 0);
+      }
+
+      function safeFileName(extension) {
+        const base = (document.title || "ontology-graph").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "ontology-graph";
+        return `${base}-graph.${extension}`;
+      }
+
+      function downloadBlob(blob, fileName) {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.setTimeout(function () { URL.revokeObjectURL(link.href); }, 1000);
+      }
+
+      function datatypeLegendGroups() {
+        return cy.edges().filter(function (edge) {
+          return edge.data("edgeKind") === "datatype-property" && (edge.data("properties") || []).length;
+        }).map(function (edge) {
+          return {
+            route: `${edge.source().data("label")} -> ${edge.target().data("label")}`,
+            properties: edge.data("properties") || []
+          };
+        });
+      }
+
+      function shortened(value, maxLength = 46) {
+        const text = String(value || "");
+        return text.length <= maxLength ? text : `${text.slice(0, maxLength - 1)}...`;
+      }
+
+      async function exportRaster(format) {
+        positionEdgeLabels();
+        fitGraph();
+        const scale = 3;
+        const groups = datatypeLegendGroups();
+        const ontologies = ontologyLegendEntries();
+        const ontologyHeight = 44 + ontologies.length * 24;
+        const hasSubclass = cy.edges("[edgeKind = 'subClassOf']").length > 0;
+        const relationHeight = hasSubclass ? 36 : 0;
+        const options = { full: true, scale, bg: "#ffffff", output: "blob" };
+        if (!groups.length && !ontologies.length && !hasSubclass) {
+          const graphOnly = format === "jpg" ? cy.jpg(options) : cy.png(options);
+          downloadBlob(graphOnly, safeFileName(format));
+          return;
+        }
+
+        const graphBlob = cy.png(options);
+        const bitmap = await createImageBitmap(graphBlob);
+        const legendWidth = 380 * scale;
+        const legendHeight = (54 + ontologyHeight + relationHeight + groups.reduce(function (height, group) {
+          return height + 38 + group.properties.length * 18;
+        }, 0)) * scale;
+        const canvas = document.createElement("canvas");
+        canvas.width = bitmap.width + legendWidth;
+        canvas.height = Math.max(bitmap.height, legendHeight);
+        const context = canvas.getContext("2d");
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(bitmap, 0, 0);
+        context.scale(scale, scale);
+        const legendX = bitmap.width / scale;
+        context.strokeStyle = "#d8e0e1";
+        context.beginPath();
+        context.moveTo(legendX + .5, 0);
+        context.lineTo(legendX + .5, canvas.height / scale);
+        context.stroke();
+        context.fillStyle = "#0f4449";
+        context.font = "600 16px system-ui, sans-serif";
+        context.fillText("Ontologies", legendX + 24, 30);
+        ontologies.forEach(function (item, index) {
+          const y = 54 + index * 24;
+          context.fillStyle = item.color;
+          context.fillRect(legendX + 24, y - 10, 12, 12);
+          context.fillStyle = "#202124";
+          context.font = "12px system-ui, sans-serif";
+          context.fillText(shortened(item.label), legendX + 44, y);
+        });
+        context.fillStyle = "#0f4449";
+        context.font = "600 16px system-ui, sans-serif";
+        if (hasSubclass) {
+          const y = ontologyHeight + 12;
+          context.strokeStyle = context.fillStyle = "#111111";
+          context.lineWidth = 1.55;
+          context.beginPath(); context.moveTo(legendX + 24, y); context.lineTo(legendX + 50, y); context.stroke();
+          context.beginPath(); context.moveTo(legendX + 48, y - 4); context.lineTo(legendX + 55, y); context.lineTo(legendX + 48, y + 4); context.closePath(); context.fill();
+          context.font = "12px system-ui, sans-serif";
+          context.fillText("rdfs:subClassOf", legendX + 66, y + 4);
+        }
+        context.fillStyle = "#0f4449";
+        context.font = "600 16px system-ui, sans-serif";
+        if (groups.length) context.fillText("Datatype properties", legendX + 24, ontologyHeight + relationHeight + 30);
+        let y = ontologyHeight + relationHeight + 58;
+        groups.forEach(function (group) {
+          context.fillStyle = "#315e62";
+          context.font = "600 11px system-ui, sans-serif";
+          context.fillText(shortened(group.route), legendX + 24, y);
+          y += 20;
+          group.properties.forEach(function (property) {
+            context.fillStyle = "#202124";
+            context.font = "10px system-ui, sans-serif";
+            context.fillText(`- ${shortened(property.title)}`, legendX + 32, y);
+            y += 18;
+          });
+          y += 14;
+        });
+        canvas.toBlob(function (blob) {
+          if (blob) {
+            downloadBlob(blob, safeFileName(format));
+          }
+        }, format === "jpg" ? "image/jpeg" : "image/png", .95);
+      }
+
+      function xmlEscape(value) {
+        return String(value ?? "").replace(/[&<>"]/g, function (char) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[char];
+        });
+      }
+
+      function graphTextLines(label, width, fontSize, weight = 400) {
+        labelContext.font = `${weight} ${fontSize}px system-ui, sans-serif`;
+        return String(label || "").split("\n").flatMap(paragraph => {
+          const lines = [];
+          let line = "";
+          paragraph.split(/\s+/).filter(Boolean).forEach(word => {
+            const next = line ? `${line} ${word}` : word;
+            if (line && labelContext.measureText(next).width > width) {
+              lines.push(line);
+              line = word;
+            } else line = next;
+          });
+          lines.push(line);
+          return lines;
+        });
+      }
+
+      function exportSvg() {
+        positionEdgeLabels();
+        const bounds = cy.elements().boundingBox({ includeLabels: true });
+        const padding = 48;
+        const minX = bounds.x1 - padding;
+        const minY = bounds.y1 - padding;
+        const groups = datatypeLegendGroups();
+        const ontologies = ontologyLegendEntries();
+        const ontologyHeight = ontologies.length ? 44 + ontologies.length * 24 : 0;
+        const hasSubclass = cy.edges("[edgeKind = 'subClassOf']").length > 0;
+        const relationHeight = hasSubclass ? 36 : 0;
+        const graphWidth = Math.max(bounds.w + padding * 2, 640);
+        const legendWidth = groups.length || ontologies.length || hasSubclass ? 380 : 0;
+        const legendHeight = 54 + ontologyHeight + relationHeight + groups.reduce(function (height, group) {
+          return height + 38 + group.properties.length * 18;
+        }, 0);
+        const width = graphWidth + legendWidth;
+        const height = Math.max(bounds.h + padding * 2, 420, legendHeight);
+        const edgeLabels = [];
+        const edgeSvg = cy.edges().map(function (edge) {
+          const source = edge.source().position();
+          const target = edge.target().position();
+          const edgeKind = edge.data("edgeKind");
+          const offset = Number(edge.data("offset") || 0);
+          const dx = target.x - source.x;
+          const dy = target.y - source.y;
+          const length = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          const offsetX = -dy / length * offset;
+          const offsetY = dx / length * offset;
+          const x1 = source.x + offsetX;
+          const y1 = source.y + offsetY;
+          const x2 = target.x + offsetX;
+          const y2 = target.y + offsetY;
+          const stroke = edgeKind === "datatype-property" ? "#66898c" : edgeKind === "object-property" ? "#0f4449" : "#111111";
+          const dash = edgeKind === "object-property" ? " stroke-dasharray=\"7 5\"" : edgeKind === "datatype-property" ? " stroke-dasharray=\"2 5\"" : "";
+          const marker = edge.data("arrow") === "none" || edgeKind === "equivalent-class" || edgeKind === "equivalent-class-parallel" ? "" : " marker-end=\"url(#arrow)\"";
+          const placement = edgeLabelPositions.get(edge.id());
+          const labelX = placement?.x ?? (x1 + x2) / 2;
+          const labelY = placement?.y ?? (y1 + y2) / 2 - 8;
+          const labelText = String(edge.style("label") || "");
+          const fontSize = parseFloat(edge.style("font-size"));
+          const weight = edge.style("font-weight");
+          const lines = graphTextLines(labelText, 150, fontSize, weight);
+          const spans = lines.map((line, index) => `<tspan x="${labelX}" dy="${index ? fontSize * 1.2 : 0}">${xmlEscape(line)}</tspan>`).join("");
+          const box = placement?.box;
+          const background = box ? `<rect x="${box.x1}" y="${box.y1}" width="${box.x2 - box.x1}" height="${box.y2 - box.y1}" fill="#fbfcfd"/>` : "";
+          const label = labelText ? `${background}<text x="${labelX}" y="${labelY - (lines.length - 1) * fontSize * .6 + fontSize * .35}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="${fontSize}" font-weight="${weight}" fill="#202124"><title>${xmlEscape(edge.data("label"))}</title>${spans}</text>` : "";
+          const bends = edge.style("curve-style") === "segments" ? edge.segmentPoints() : [];
+          const points = bends?.length ? [edge.sourceEndpoint(), ...bends, edge.targetEndpoint()] : [{x:x1, y:y1}, {x:x2, y:y2}];
+          const route = points.map((point, index) => `${index ? 'L' : 'M'}${point.x} ${point.y}`).join(' ');
+          edgeLabels.push(label);
+          return `<path d="${route}" fill="none" stroke="${stroke}" stroke-width="1.6"${marker}${dash}/>`;
+        }).join("\n");
+        const nodeSvg = cy.nodes().map(function (node) {
+          const position = node.position();
+          const kind = node.data("kind");
+          const fontSize = parseFloat(node.style("font-size"));
+          const lines = graphTextLines(String(node.style("label") || ""), parseFloat(node.style("text-max-width")), fontSize, 600).map(xmlEscape);
+          const width = node.outerWidth();
+          const height = node.outerHeight();
+          const fill = node.data("color");
+          const stroke = node.data("border");
+          const color = kind === "literal" ? "#0f4449" : "#ffffff";
+          const nodeDash = '';
+          const radius = kind === "literal" ? 0 : 5;
+          const fontWeight = 600;
+          const textY = position.y - ((lines.length - 1) * fontSize * .6);
+          const text = lines.map(function (line, index) { return `<tspan x="${position.x}" dy="${index === 0 ? 0 : fontSize * 1.2}">${line}</tspan>`; }).join("");
+          return `<rect x="${position.x - width / 2}" y="${position.y - height / 2}" width="${width}" height="${height}" rx="${radius}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"${nodeDash}/><text x="${position.x}" y="${textY + fontSize * .35}" text-anchor="middle" font-family="system-ui, sans-serif" font-size="${fontSize}" font-weight="${fontWeight}" fill="${color}">${text}</text>`;
+        }).join("\n");
+        let legendY = minY + ontologyHeight + relationHeight + 58;
+        const legendX = minX + graphWidth;
+        const ontologySvg = ontologies.map(function (item, index) {
+          const y = minY + 54 + index * 24;
+          return `<rect x="${legendX + 24}" y="${y - 10}" width="12" height="12" fill="${item.color}"/><text x="${legendX + 44}" y="${y}" font-family="system-ui, sans-serif" font-size="12" fill="#202124">${xmlEscape(shortened(item.label))}</text>`;
+        }).join("");
+        const relationY = minY + ontologyHeight + 12;
+        const relationSvg = hasSubclass ? `<path d="M${legendX + 24} ${relationY}h26" fill="none" stroke="#111" stroke-width="1.55"/><path d="M${legendX + 48} ${relationY - 4}l7 4l-7 4Z" fill="#111"/><text x="${legendX + 66}" y="${relationY + 4}" font-family="system-ui, sans-serif" font-size="12" fill="#202124">rdfs:subClassOf</text>` : "";
+        const ontologyTitle = relationSvg + (ontologies.length ? `<text x="${legendX + 24}" y="${minY + 30}" font-family="system-ui, sans-serif" font-size="16" fill="#0f4449">Ontologies</text>` : "");
+        const legendSvg = groups.length ? `<line x1="${legendX}" y1="${minY}" x2="${legendX}" y2="${minY + height}" stroke="#d8e0e1"/><text x="${legendX + 24}" y="${minY + ontologyHeight + relationHeight + 30}" font-family="system-ui, sans-serif" font-size="16" font-weight="600" fill="#0f4449">Datatype properties</text>${groups.map(function (group) {
+          const routeY = legendY;
+          legendY += 20;
+          const propertyLines = group.properties.map(function (property) {
+            const line = `<text x="${legendX + 32}" y="${legendY}" font-family="system-ui, sans-serif" font-size="10" fill="#202124">- ${xmlEscape(shortened(property.title))}</text>`;
+            legendY += 18;
+            return line;
+          }).join("");
+          legendY += 14;
+          return `<text x="${legendX + 24}" y="${routeY}" font-family="system-ui, sans-serif" font-size="11" font-weight="600" fill="#315e62">${xmlEscape(shortened(group.route))}</text>${propertyLines}`;
+        }).join("")}` : "";
+        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="${minX} ${minY} ${width} ${height}"><defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L7,3 z" fill="#111111"/></marker></defs><rect x="${minX}" y="${minY}" width="${width}" height="${height}" fill="#ffffff"/>${edgeSvg}${nodeSvg}${edgeLabels.join("\n")}${ontologyTitle}${ontologySvg}${legendSvg}</svg>`;
+        downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), safeFileName("svg"));
+      }
+
+      document.getElementById("reset-graph-layout")?.addEventListener("click", function () { runLayout(); });
+      document.getElementById("fit-graph")?.addEventListener("click", function () { fitGraph(false); });
+      document.getElementById("zoom-in-graph")?.addEventListener("click", function () { changeGraphZoom(1.25); });
+      document.getElementById("zoom-out-graph")?.addEventListener("click", function () { changeGraphZoom(1 / 1.25); });
+      datatypeToggle?.addEventListener("change", refreshGraph);
+      externalToggle?.addEventListener("change", refreshGraph);
+      document.getElementById("datatype-inspector-close")?.addEventListener("click", closeDatatypeInspector);
+      document.getElementById("export-graph-png")?.addEventListener("click", function () { exportRaster("png"); });
+      document.getElementById("export-graph-jpg")?.addEventListener("click", function () { exportRaster("jpg"); });
+      document.getElementById("export-graph-svg")?.addEventListener("click", exportSvg);
+      exportMenu.addEventListener("click", function (event) {
+        if (event.target.closest("button")) {
+          exportMenu.open = false;
+          exportMenu.querySelector("summary").focus();
+        }
+      });
+      document.addEventListener("click", function (event) {
+        if (!exportMenu.contains(event.target)) exportMenu.open = false;
+      });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && exportMenu.open) {
+          exportMenu.open = false;
+          exportMenu.querySelector("summary").focus();
+        }
+      });
+      fullscreenButton?.addEventListener("click", function () {
+        if (!document.fullscreenElement && panel?.requestFullscreen) {
+          panel.requestFullscreen();
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      });
+      document.addEventListener("fullscreenchange", function () {
+        const fullscreen = document.fullscreenElement === panel;
+        fullscreenButton.setAttribute("aria-pressed", String(fullscreen));
+        fullscreenButton.setAttribute("aria-label", fullscreen ? "Exit fullscreen" : "Fullscreen");
+        fullscreenButton.title = fullscreen ? "Exit fullscreen" : "Fullscreen";
+        window.setTimeout(function () {
+          fitGraph();
+        }, 80);
+      });
+      cy.on("dbltap", "node", function (event) {
+        if (!["class", "external-class"].includes(event.target.data("kind"))) return;
+        focusId = event.target.id();
+        refreshGraph();
+      });
+      cy.on("mouseover", "edge", event => { container.title = event.target.data("label") || ""; });
+      cy.on("mouseout", "edge", () => { container.removeAttribute("title"); });
+      cy.on("tap", "edge[edgeKind = 'datatype-property']", function (event) {
+        showDatatypeInspector(event.target);
+      });
+      cy.on("mouseover", "edge[edgeKind = 'datatype-property']", function () {
+        container.style.cursor = "pointer";
+      });
+      cy.on("mouseout", "edge[edgeKind = 'datatype-property']", function () {
+        container.style.cursor = "default";
+      });
+    })();
+  </script>
+  {% endif %}
+  <script>{{ inline_script('toc-search.js') }}</script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+services:
+  ontolens:
+    build: .
+    image: ontolens:local
+    ports:
+      - "127.0.0.1:${ONTOLENS_PORT:-8080}:8000"
+    volumes:
+      - type: bind
+        source: ${ONTOLENS_DATA_DIR:-./docker-data}
+        target: /data
+      - type: bind
+        source: ${ONTOLENS_HOST_DIR:-C:/}
+        target: /data/host-drive
+        bind:
+          create_host_path: false
+    environment:
+      ONTOLENS_HOST_DIRECTORY: /data/host-drive
+      ONTOLENS_HOST_SOURCE: ${ONTOLENS_HOST_DIR:-C:/}
+    init: true
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp:size=256m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
