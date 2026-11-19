@@ -1,6 +1,6 @@
 # Project workflow audit and CLI/GUI comparison
 
-Audit: 2026-10-29. This describes the implemented application, not the design dummy.
+Audit snapshot: 2026-10-29. This records what was tested at the time. For current instructions, use the [workspace guide](workspace.md).
 
 ## Automated workflow coverage
 
@@ -50,8 +50,8 @@ tested. React navigation/discard handling was reviewed and corrected in code.
 
 | Function | CLI | Current GUI |
 | --- | --- | --- |
-| Technical HTML | `INPUT -o OUTPUT` | HTML-Dokumentation tab |
-| Combined HTML | `--content FILE` | Kombinierte Dokumentation tab; assigned Markdown required |
+| Technical HTML | `INPUT -o OUTPUT` | HTML documentation tab |
+| Combined HTML | `--content FILE` | Combined documentation tab; assigned Markdown required |
 | Markdown template | `init-content --profile compact/standard` | Both profiles; generation and assignment |
 | Template language | `init-content --language de/en` | Shared language field; de/en templates |
 | RDF parser | `--format` | Editable parser field; automatic detection when empty |
@@ -61,7 +61,7 @@ tested. React navigation/discard handling was reviewed and corrected in code.
 | Custom annotations | `--custom-annotations` | Checkbox |
 | Missing object-property endpoints in graph | `--show-missing-endpoints` | Checkbox; off by default; no effect on quality checks |
 | Missing ontology images | `--skip-missing-images` | Checkbox; Markdown images remain required |
-| HTML theme | `--theme light/dark/both` | Hell / Dunkel / Beide; GUI preview switches variants, generated pages have no toggle |
+| HTML theme | `--theme light/dark/both` | Light / Dark / Both; GUI preview switches variants, generated pages have no toggle |
 | Markdown completeness | `--check-content` | Check button for editor draft; YAML `check_content` honored on combined builds |
 | Output location | `--output` | Project-wide directory picker |
 | Explicit output filename | `-o FILE` | Not exposed; generated names are automatic |
@@ -96,3 +96,9 @@ Portability still requires keeping the whole project folder and internal assets.
 External Markdown, output locations, remote image URLs/imports/scripts are not
 automatically copied. SVG CSS resources and other external web dependencies are
 not covered by the SVG image/use bundling. This is not a fully offline web archive.
+
+## Documentation generator backlog
+
+- Improve rendering of OWL restrictions and SHACL shapes.
+- Add multi-page output for larger ontologies.
+- Jump from full-text search results to the exact occurrence and briefly highlight it, including in long Markdown chapters.

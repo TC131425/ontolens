@@ -1,134 +1,79 @@
-# Dokumentationen als PDF exportieren
+# Export documentation as PDF
 
-## In der Oberfläche
+PDF export prints a **saved HTML document**, not the live ontology or Markdown draft.
+Regenerate the HTML first if it must reflect recent edits. Printing never changes
+the source, linked HTML or project history.
 
-Unter **Projekteinstellungen → Projekt weitergeben → Dokumentation als PDF**:
+## Print from the web app
 
-1. Gewünschte Dokumente auswählen: HTML-Dokumentation und/oder HTML + Markdown
-   pro Ontologie. Nur vorhandene, verknüpfte HTML-Dateien sind auswählbar.
-2. Papierformat **A4** (Standard) oder **A3** wählen. Der Text verwendet Hochformat,
-   der optionale Graph erhält immer eine eigene Querformatseite desselben Formats.
-3. **Abbildungen einschließen** ist standardmäßig an, **Ontologiegraph ins PDF aufnehmen** aus.
-   Beide Checkboxen sind unabhängig: Der Graph kann auch ohne andere Abbildungen exportiert werden.
-4. **PDF exportieren** anklicken und anschließend den Downloadlink verwenden.
+1. Open **Project settings > Share project > Export documentation as PDF**.
+2. Select the linked HTML documents to print. You can choose the technical or
+   combined version of each ontology, up to 20 documents per export.
+3. Choose **Paper size** (A4 by default or A3). **Include figures** is on by
+   default; **Include ontology graph in PDF** is off. They are independent.
+4. Select **Export PDF** and download the result. One document produces a PDF;
+   multiple documents produce a ZIP with one PDF per document, not a merged PDF.
 
-Ein Dokument ergibt eine PDF. Mehrere Dokumente ergeben einen ZIP-Download mit
-je einer PDF pro ausgewähltem Dokument. Maximal 20 Dokumente pro Vorgang.
-Die gesamte Dokumentation wird exportiert; Kapitelauswahl und zusammengeführte
-Gesamt-PDF sind nicht Bestandteil dieser ersten Version.
+## What the reader sees
 
-Die PDF basiert auf der **gespeicherten HTML-Datei**, nicht auf einer neu
-eingelesenen Ontologie. Nach Änderungen an Quelle oder Markdown die
-HTML-Dokumentation zuerst neu generieren. Keine Quelldatei, HTML-Datei oder
-Verknüpfung wird durch den PDF-Export verändert.
+Text is portrait and always uses a light print style, even for a dark HTML source.
+Restrictions and instance lists are expanded. Chapter links, bookmarks, internal
+term links, the document title and page numbers are preserved. Figures are scaled
+proportionally. The optional graph and its legend occupy a separate landscape
+page of the selected paper size. The graph uses the saved graph data, not the
+zoom, filters or dragged positions in your browser.
 
-## Drucklayout
+Choose A3 for a dense graph. If labels still look too small, omit the graph and
+share the interactive HTML alongside the PDF. Missing graph data in an old or
+manually linked HTML file produces a notice. Graphs larger than 1,000 nodes or
+3,000 edges cannot be exported as a figure; export without the graph instead.
 
-- Immer helles Drucklayout, auch bei dunkel erzeugten HTML-Dateien.
-- Offene Restrictions und Instanzlisten, ohne interaktive Bedienelemente.
-- Klickbares Kapitel-Inhaltsverzeichnis, PDF-Lesezeichen und interne Termverweise.
-- Dokumenttitel in der Kopfzeile, Seitenzahl und Gesamtseitenzahl im Fußbereich.
-- Tabellen mit festen Spalten, Zeilenumbrüchen und Druck-Seitenumbrüchen.
-- Abbildungen werden proportional auf die verfügbare Seitenfläche begrenzt.
-- Der Graph wird aus den in der HTML-Datei gespeicherten OntoLens-Graphdaten mit
-  der mitgelieferten Cytoscape-Version kompakt angeordnet, mit vergrößerten Knoten-
-  und Kantenbeschriftungen versehen und als hochauflösende PNG
-  eingebettet. Er ist statisch: aktuelle Zoom-/Filter-/Drag-Zustände eines offenen
-  Browserfensters werden nicht übernommen. Fachliche Detailtabellen bleiben enthalten.
-- Graphen mit mehreren getrennten Komponenten verwenden dieselbe kompakte
-  Netzwerk-Anordnung wie die HTML-Ansicht: Zusammenhaengende Klassen bleiben
-  gruppiert, isolierte Klassen werden in mehreren Reihen angeordnet. Lange
-  Klassennamen werden mit Praefix umbrochen, ohne die gespeicherten IRIs zu aendern.
-  Kantenbeschriftungen werden um Knoten und andere Beschriftungen herum platziert.
-  Zusammenhaengende Graphen behalten das bisherige druckoptimierte Raster.
-  Titel, Legende und Graph teilen sich eine Querformatseite; die Grafik nutzt den
-  verbleibenden Platz proportional, statt auf eine separate Seite umzubrechen.
+## Print from the CLI
 
-Bei großen Graphen A3 verwenden oder den Graph weglassen. Auch eine hohe
-Bildauflösung kann sehr kleine Beschriftungen bei vielen Knoten nicht verhindern.
-Fehlen Graphdaten in einer älteren/manuell zugeordneten HTML-Datei, wird das als
-Hinweis gemeldet. Mehr als 1000 Knoten oder 3000 Kanten blockieren den Graphexport;
-der Export ohne Graph bleibt möglich.
+Docker includes the renderer. For a local installation, install the optional
+dependencies and Chromium first:
 
-## Dateien und Sicherheit
-
-Der Renderer führt keine Skripte aus der HTML-Dokumentation aus und lädt keine
-Netzwerkressourcen. Nur der mit OntoLens ausgelieferte Graph-Code wird ausgeführt.
-Lokale Bilder müssen im Dokumentationsordner bzw. zugeordneten Export-Bundle liegen.
-Fehlende lokale Bilder verhindern den Export, sofern Abbildungen eingeschlossen sind.
-Online-Bilder erscheinen als Texthinweis und werden zusätzlich in den PDF-Hinweisen
-gemeldet. Externe CSS-Dateien und Webfonts werden nicht nachgeladen; das Drucklayout
-verwendet lokale Schriften. Fremde HTML-Seiten mit eigenem JavaScript werden nicht
-wie in einem normalen Browser ausgeführt.
-
-In der GUI werden temporäre Serverdateien nach der Übertragung gelöscht. Der
-Browser bestimmt den Downloadordner. Der PDF-Export erstellt keine zusätzliche
-HTML-Verknüpfung oder Build-Historie im Arbeitsprojekt.
-
-## Installation und Docker
-
-Docker enthält den Renderer bereits. Der erste Image-Build dauert wegen Chromium,
-Schriften und Systembibliotheken länger; das Image ist entsprechend größer.
-Es werden keine zusätzlichen Ports oder Host-Verzeichnisse benötigt.
-
-Für eine lokale Python-Installation:
-
-```console
+```sh
 uv sync --extra web --extra pdf
 uv run --extra web --extra pdf python -m playwright install --only-shell chromium
 ```
 
-Unter Linux bei fehlenden Systembibliotheken:
+On Linux, add `--with-deps` to the Playwright install command if system libraries
+are missing. When starting the local web API for PDF export, pass both extras to
+`uv run`. Other CLI commands do not require the PDF extra.
 
-```console
-uv run --extra web --extra pdf python -m playwright install --with-deps --only-shell chromium
-```
-
-Die API ebenfalls mit beiden Extras starten, damit `uv` die PDF-Abhängigkeit
-nicht wieder entfernt. Ohne PDF-Extra funktionieren die bisherigen CLI-Befehle
-weiter; ein PDF-Aufruf meldet die fehlende Komponente.
-
-## CLI
-
-```console
-uv run --extra pdf ontolens pdf path/to/documentation.html -o build/ontology.pdf
-uv run --extra pdf ontolens pdf path/to/documentation.html --paper A3 --graph -o build/ontology.pdf
+```sh
+uv run --extra pdf ontolens pdf documentation.html -o build/ontology.pdf
+uv run --extra pdf ontolens pdf documentation.html --paper A3 --graph -o build/ontology-graph.pdf
 uv run --extra pdf ontolens pdf first.html second.html --no-figures -o build/documents.zip
 ```
 
-Ausgaben landen in Zeitstempelordnern, etwa
-`build/2026-10-29T16-30-00_ontology/ontology.pdf`.
-Die Endung wird passend zur Anzahl der Eingaben auf `.pdf` bzw. `.zip` gesetzt.
-CLI-Bildpfade müssen innerhalb des Ordners der jeweiligen HTML-Datei liegen.
+The CLI writes `build/<timestamp>_<output-stem>/<filename>`, choosing `.pdf` or
+`.zip` based on the number of inputs. In Docker use e.g.
+`docker compose exec ontolens ontolens pdf /data/project/documentation.html -o /data/exports/documentation.pdf`.
+Web downloads go to the browser's download folder; temporary server files are removed.
 
-Im Container:
+## Resources and privacy
 
-```console
-docker compose exec ontolens ontolens pdf /data/project/build/documentation.html --paper A4 -o /data/exports/documentation.pdf
-```
+The renderer does not execute scripts from the source HTML or fetch network
+resources. Only the bundled graph code runs. Local images must be inside the
+document folder or its registered export bundle. If figures are included, a
+missing local image blocks export. Online images become text notices; external
+stylesheets and web fonts are not fetched.
 
-## API und Tests
+## API and testing
 
-`POST /api/project/pdf` benötigt `X-Ontolens-Write: 1`, die aktuelle `revision`
-und `documents: [{"ontology": "id", "kind": "reference"}]`.
-`kind` ist `reference` oder `combined`. Weitere Felder: `paper` (`A4`/`A3`),
-`figures` (Standard `true`) und `graph` (Standard `false`). Antwort: PDF oder ZIP,
-Dateiname in `X-Ontolens-Filename`, Hinweise in `X-Ontolens-Notices`.
+`POST /api/project/pdf` requires `X-Ontolens-Write: 1`, the project `revision`,
+and `documents` entries such as `{"ontology":"library","kind":"reference"}`.
+Use `reference` or `combined`; optional fields are `paper` (`A4` or `A3`),
+`figures` (default true) and `graph` (default false). The response contains the
+PDF or ZIP; see `X-Ontolens-Filename` and `X-Ontolens-Notices` for details.
 
-Die normalen Tests prüfen Auswahl, Validierung, Ressourcenbegrenzung und HTML-
-Vorbereitung. Für echte Chromium-Tests unter PowerShell:
+For the optional real-renderer tests in PowerShell:
 
 ```powershell
 $env:ONTOLENS_TEST_PDF = '1'
 uv run --extra web --extra pdf pytest tests/test_pdf_export.py -q
 ```
 
-Mit einem vorhandenen Docker-Smoke-Testprojekt kann der echte API-Workflow ohne
-neue Projektanlage geprüft werden:
-
-```powershell
-Get-Content scripts/docker_smoke.py -Raw | docker compose exec -T ontolens python - --pdf /data/docker-smoke-<ID>/manifest.json
-```
-
-Technische Grundlagen: [Playwright PDF-Ausgabe](https://playwright.dev/python/docs/api/class-page#page-pdf)
-und [Playwright in Docker](https://playwright.dev/python/docs/docker).
+For a container-level check, see [Verify a deployment](docker.md#verify-a-deployment).

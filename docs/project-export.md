@@ -1,95 +1,56 @@
-# Projekt als ZIP weitergeben
+# Share a project as a ZIP
 
-## Oberfläche
+Use a project ZIP when the recipient needs to **edit or rebuild** the documentation.
+To share only a finished site, distribute the generated HTML or portal bundle.
+To send a printable copy, use [PDF export](pdf-export.md).
 
-1. Projekt öffnen und **Projekteinstellungen** auswählen.
-2. Unter **Projekt weitergeben** bei Bedarf **Generierte Dokumentationen und
-   Portale einschließen** aktivieren. Standardmäßig ist die Option aus.
-3. **Projekt als ZIP exportieren** anklicken. OntoLens prüft und bündelt die Dateien.
-4. Exporthinweise lesen und **Projekt-ZIP herunterladen** auswählen.
+## Package and reopen the project
 
-Der Download enthält eine Momentaufnahme der gespeicherten Dateien. Das
-Arbeitsprojekt wird nicht verändert. Der Browser bestimmt den Downloadordner;
-im Projekt entsteht kein zusätzlicher Build. Temporäre Serverdateien werden nach
-der Übertragung entfernt.
+1. In **Project settings > Share project**, select **Include generated documentation
+   and portals** if the recipient also needs the currently linked outputs (off by default).
+2. Select **Export project as ZIP**, review the notices, then **Download project ZIP**.
+   This snapshots the saved files without modifying the project or creating a build in it.
+3. On the receiving computer, extract the ZIP and choose **Open project**.
+   Select `project/ontolens.project.yaml`. For Docker, extract inside a mounted folder.
 
-## Paketinhalt
+Alternatively, rebuild the extracted project from the CLI:
 
-```text
-project/
-  ontolens.project.yaml
-  EXPORT-INFO.txt
-  sources/<ontologie-id>/<quelle.ttl>
-  sources/<ontologie-id>/img/...
-  content/<ontologie-id>/<dokumentation.md>
-  content/<ontologie-id>/img/...
-  build/export-*/...                 # optional
-  ontolens.project.outputs.json     # optional
+```sh
+uv run ontolens build project/ontolens.project.yaml
 ```
 
-- Ontologien und zugeordnetes Markdown werden auch dann kopiert, wenn sie
-  außerhalb des Projektordners liegen. Lokale Bildverweise werden angepasst.
-- Konfiguration und Ausgabezuordnungen verwenden innerhalb des Pakets relative
-  Pfade. Der Ausgabeordner der Kopie ist `build`.
-- Optionen, Projektname, Ontologie-IDs und Portal-Konfiguration bleiben erhalten.
-- RDF-Dateien können zur Anpassung lokaler Bildverweise neu serialisiert werden.
-  Formatierung und Kommentare der kopierten RDF-Datei können sich dadurch ändern;
-  die Originaldatei bleibt unverändert.
-- Mit der Checkbox werden **aktuell verknüpfte** Dokumentationen und Portale samt
-  lokal referenzierten Ressourcen übernommen, einschließlich Hell/Dunkel-Varianten.
-  Andere Dateien im Ausgabeordner und alte, nicht mehr verknüpfte Builds werden
-  nicht pauschal eingepackt. Auch fremde Dateien neben einer HTML-Datei bleiben außen vor.
+## Package from the CLI
 
-## Prüfen und Grenzen
-
-Fehlende Quellen, Markdown-Dateien oder lokale Bilder blockieren den Export mit
-einer Fehlermeldung. Das gilt auch bei aktivem `skip_missing_images`: Ein
-Projektpaket soll keine fehlenden Quellbilder stillschweigend übergehen.
-Bei eingeschlossenen Ausgaben blockieren fehlende lokale Abhängigkeiten,
-absolute Dateiverweise und Verweise außerhalb des jeweiligen Exportordners den
-Export. Gegebenenfalls die Dokumentation neu generieren oder die Checkbox ausschalten.
-
-Online-Bilder bleiben online. `owl:imports` wird nicht automatisch heruntergeladen.
-Diese Abhängigkeiten werden in den Exporthinweisen und in `EXPORT-INFO.txt`
-aufgeführt. Normale lokale Markdown-Links auf andere Dokumente werden nicht wie
-Bilder gebündelt und erzeugen einen Hinweis. Nicht unterstützte Bildsyntax wird
-abgewiesen, statt ein Paket mit gebrochenem Bildpfad auszugeben.
-
-Neue OntoLens-Dokumentationen betten ihre Graph-Skripte einschließlich Cytoscape
-direkt in die HTML ein; ein `assets/`-Ordner ist dafür nicht mehr nötig. Bilder
-bleiben in `img/`. Das Paket ist trotzdem **kein vollständiges Offline-Webarchiv**:
-Online-Bilder, externe Links sowie Web-Abhängigkeiten älterer oder fremder
-HTML-Dateien können weiterhin Internetzugang benötigen. Vorhandene Exporte werden
-beim Verpacken nicht auf das neue HTML-Format umgestellt; dafür neu generieren.
-Es enthält keine globale Projektliste oder persönlichen Anwendungseinstellungen.
-
-## Entpacken und verwenden
-
-ZIP an einen gewünschten Ort entpacken. Danach in OntoLens über **Projekt öffnen**
-die enthaltene `project/ontolens.project.yaml` auswählen. Bei Docker muss der
-entpackte Ordner im eingebundenen Datenordner liegen. Ein eigener ZIP-Importdialog
-ist noch nicht erforderlich bzw. nicht Bestandteil dieser Funktion.
-
-Alternativ per CLI neu generieren:
-
-```console
-uv run ontolens build /pfad/zum/entpackten/project/ontolens.project.yaml
+```sh
+uv run ontolens pack my-project.yaml -o build/my-project.zip
+uv run ontolens pack my-project.yaml -o build/my-project.zip --include-outputs
 ```
 
-## CLI-Export
+The CLI writes `build/<timestamp>_my-project/my-project.zip`. The outputs option
+reads the GUI's saved `.outputs.json` links; it does **not** scan the build history.
+In Docker, use e.g. `docker compose exec ontolens ontolens pack /data/project/ontolens.project.yaml -o /data/exports/project.zip`.
 
-```console
-uv run ontolens pack projects/mein-projekt.yaml -o build/mein-projekt.zip
-uv run ontolens pack projects/mein-projekt.yaml -o build/mein-projekt.zip --include-outputs
-```
+## What travels with the ZIP
 
-Wie bei anderen CLI-Ausgaben entsteht ein Zeitstempelordner, beispielsweise
-`build/2026-10-29T16-30-00_mein-projekt/mein-projekt.zip`.
-`--include-outputs` verwendet die neben der Konfiguration gespeicherten
-`.outputs.json`-Zuordnungen der GUI; es durchsucht keinen gesamten Build-Verlauf.
+| Inside `project/` | Contents |
+| --- | --- |
+| `ontolens.project.yaml` | Settings, ontology IDs and portal configuration, with portable paths and `build` as the output folder. |
+| `sources/<id>/` | Each source ontology and its local images, even for externally linked sources. Rewriting local image paths may reformat the **copy** of the RDF, not the original. |
+| `content/<id>/` | Linked Markdown and its local images, with adjusted relative references. |
+| `EXPORT-INFO.txt` | Notices about external dependencies and what was packaged. |
+| `build/export-*/` and `ontolens.project.outputs.json` | Optional linked documents and portals, both theme variants where available, plus their referenced local resources. Unlinked builds and unrelated neighboring files are excluded. |
 
-Im Container ohne `uv run`:
+The archive does not contain a global project list, personal app preferences or
+a complete offline copy of the web. Online images, external links and
+`owl:imports` remain external. Ordinary Markdown links to local documents are
+reported but not bundled as images.
 
-```console
-docker compose exec ontolens ontolens pack /data/mein-projekt/ontolens.project.yaml -o /data/exports/mein-projekt.zip --include-outputs
-```
+## If packaging fails
+
+Missing sources, linked Markdown or local images block export, even if HTML
+generation is configured to skip missing figures. Correct the paths rather than
+passing on an incomplete project. Unsupported image syntax is reported. When
+including generated outputs, missing dependencies, absolute file references and
+references escaping an output folder can also block export. Regenerate the affected
+document or exclude generated outputs. Packaging does not upgrade old HTML to use
+the newer embedded graph scripts.

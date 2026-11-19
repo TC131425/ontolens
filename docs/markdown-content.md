@@ -4,20 +4,14 @@ OntoLens can combine editorial Markdown with the automatically generated ontolog
 
 Without `--content`, OntoLens continues to generate the regular standalone reference page.
 
-Keep each ontology and its Markdown in `examples/<ontology>/`, with original
-images in its `figures/` subdirectory. Relative image references such as
-`figures/OntologyOverview.svg` continue to work. Run examples from the project root.
-Without `--output`, HTML is written beneath `build/<input-stem>/` in the current
-working directory. Explicit output paths override this destination. `build/` is
-ignored by Git and contains generated results, including new Markdown templates.
-Move a template into `examples/<ontology>/` when adopting it as maintained input.
-
 ## Generate a combined page
 
-Start with an editable template (this creates Markdown, not an HTML build):
+Use `demo.ttl` from the [quick start](../README.md#generate-html-from-the-command-line)
+or substitute your own file. Run these commands from the folder containing the
+ontology. First generate an editable Markdown file beside it:
 
-```bash
-uv run ontolens init-content examples/isoprops/isoprops.ttl --language de --profile standard
+```sh
+uv run ontolens init-content demo.ttl --language en --profile compact -o guide.md
 ```
 
 `--profile standard` is the default. `--profile compact` provides introduction,
@@ -35,15 +29,16 @@ An explicit `-o` writes to that exact Markdown path, without adding a timestamp.
 Existing files are never overwritten, including repeated calls in the same second.
 Choose another output path or retry later if the file already exists.
 
-For continued editing, move the template to `examples/isoprops/guide.de.md`.
-Alternatively, use `-o examples/isoprops/guide.de.md` to deliberately create a
-maintained input directly. The HTML build below assumes that maintained location.
+Edit `guide.md`, then generate the combined page:
 
-Build the newly created document with:
-
-```bash
-uv run ontolens examples/isoprops/isoprops.ttl --content examples/isoprops/guide.de.md -o build/isoprops/isoprops-guide.html
+```sh
+uv run ontolens demo.ttl --content guide.md -o build/library-guide.html
 ```
+
+Open `build/<timestamp>_library-guide/library-guide.html`. The template remains
+your editable source. Keep its figures relative to the Markdown file. If you
+generate a template without `-o`, move it out of `build/` before adopting it as
+maintained input.
 
 Use `--check-content` to report missing or empty chapters while still generating
 the HTML. Empty chapters are allowed; the profiles remain starting templates,
@@ -52,7 +47,7 @@ not enforced schemas.
 ## Optional completeness check
 
 ```bash
-uv run ontolens examples/isoprops/isoprops.ttl --content examples/isoprops/documentation.de.md --check-content
+uv run ontolens demo.ttl --content guide.md --check-content
 ```
 
 The check prints notices to standard error and does not change the generated
@@ -80,31 +75,10 @@ the HTML generator supplies these automatically.
 This is a structural check: it does not judge correctness, text quality or whether
 prose such as `TODO` has been meaningfully completed. No chapter changes are made.
 
-```bash
-uv run ontolens examples/isoprops/isoprops.ttl \
-  --content examples/isoprops/documentation.de.md \
-  -o build/isoprops/isoprops-combined.html
-```
+The HTML options can be combined, for example:
 
-The output name determines the HTML filename and bundle name. OntoLens prefixes the bundle directory with the local generation timestamp:
-
-```text
-build/isoprops/2026-08-26T14-30-05_isoprops-combined/
-├── isoprops-combined.html
-└── img/
-```
-
-This timestamped bundle behavior applies to regular ontology documentation and combined Markdown documentation alike.
-
-All existing opt-in flags can be combined with `--content`:
-
-```bash
-uv run ontolens examples/isoprops/isoprops.ttl \
-  --content examples/isoprops/documentation.de.md \
-  --recommendations \
-  --quality-report \
-  --custom-annotations \
-  -o build/isoprops/isoprops-combined-full.html
+```sh
+uv run ontolens demo.ttl --content guide.md --recommendations --quality-report --custom-annotations -o build/library-full.html
 ```
 
 ## Frontmatter
@@ -113,9 +87,9 @@ An optional YAML block at the start of the file controls the page presentation:
 
 ```yaml
 ---
-language: de
-title: ISO 23386 Property Ontology (ISOProps)
-description: Fachliche Einführung und technische Ontologiereferenz.
+language: en
+title: Library ontology
+description: A guide to books, authors and their relationships.
 ---
 ```
 
@@ -153,18 +127,18 @@ Each slot may occur at most once. An unknown or repeated slot stops the build wi
 
 ### Inserting content in the editor
 
-In the GUI, switch the Markdown pane to **Bearbeiten**. The insert toolbar contains:
+In the GUI, switch the Markdown pane to **Edit**. The insert toolbar contains:
 
-- **Abschnitt einfügen**: select a generated section to insert its slot comment.
+- **Insert section**: select a generated section to insert its slot comment.
   Already used slots are disabled, including their aliases (`quality`, `namespaces`
   and `namespace-prefixes`). Deleting a slot makes it available again.
-- **Bild einfügen** (image icon): enter a relative image path or URL and alternative
+- **Insert image** (image icon): enter a relative image path or URL and alternative
   text. The initial values provide a quick editable example. The action inserts
   Markdown only; it does not upload or copy a file. The image must already be
   accessible relative to the assigned Markdown file or via its URL.
-- **Tabelle einfügen** (table icon): choose 1-10 columns and 1-50 data rows.
+- **Insert table** (table icon): choose 1-10 columns and 1-50 data rows.
   OntoLens adds a header row and editable sample cells automatically.
-- **Link einfügen** (chain icon): enter a destination and link text. Selected
+- **Insert link** (chain icon): enter a destination and link text. Selected
   editor text becomes the initial link text. An empty link text uses the destination.
   Web addresses (`https://` or `http://`), `mailto:` and relative links or fragments
   are supported. The link replaces the selection inline, without starting a new paragraph.
@@ -172,8 +146,8 @@ In the GUI, switch the Markdown pane to **Bearbeiten**. The insert toolbar conta
 Sections, images and tables insert a separate Markdown block at the last cursor position,
 replacing selected text if there is a selection. Without an existing cursor
 position, the block is appended to the document. The editor regains focus after
-insertion. Changes remain unsaved until **Speichern** or **Ctrl+S** is used.
-Switch to **Lesen** to see images and formatted tables. Generated-section slots
+insertion. Changes remain unsaved until **Save** or **Ctrl+S** is used.
+Switch to **Read** to see images and formatted tables. Generated-section slots
 are expanded only when the combined HTML documentation is built; selecting a
 quality-report slot does not enable the quality-report option by itself.
 
@@ -200,7 +174,7 @@ as clickable links:
 
 A bare URL such as `https://example.org` is automatically linked by the GUI's
 GFM reader but remains plain text in the HTML export. Use one of the explicit
-forms above or **Link einfügen** in the editor. The button may put angle brackets
+forms above or **Insert link** in the editor. The button may put angle brackets
 around the destination inside parentheses; this is valid Markdown as well.
 Links are references only: linked local documents are not automatically copied
 into the output folder. Save the Markdown and regenerate combined HTML to apply edits.
@@ -210,9 +184,9 @@ into the output folder. Save the Markdown and regenerate combined HTML to apply 
 Use wiki-style references to link narrative text to generated term entries:
 
 ```markdown
-[[isoprops:Property]]
-[[isoprops:Property|Merkmal]]
-[[https://w3id.org/isoprops#Property|Merkmal]]
+[[ex:Book]]
+[[ex:Book|a book]]
+[[https://example.org/library#Book|a book]]
 ```
 
 The first form uses the generated term title as link text. The second and third forms provide custom link text. CURIEs and complete term IRIs are supported.
@@ -225,13 +199,13 @@ Optional chapter markers assign language-independent anchors to the next heading
 
 ```markdown
 <!-- ontolens:chapter introduction -->
-# Einleitung
+# Introduction
 
 Describe the purpose and audience here.
 ```
 
 This produces `#chapter-introduction`, also used in the table of contents.
-Renaming the heading to `Introduction` preserves that link. Markers must precede
+Renaming the heading to `Getting started` preserves that link. Markers must precede
 a level 1-3 heading, and keys must start with a lowercase letter and contain only
 lowercase ASCII letters, digits and hyphens. Keys must be unique. Custom keys are
 allowed. A missing heading, duplicate key or conflicting anchor raises an error.
@@ -282,13 +256,13 @@ External `http:`, `https:`, and data-URI images are not downloaded and remain un
 
 ### Images in the local editor
 
-The **Lesen** view displays Markdown images, including local SVG, PNG and JPG
+The **Read** view displays Markdown images, including local SVG, PNG and JPG
 files. Relative paths are resolved from the assigned Markdown file, not from the
 project configuration or the export folder. This also works in Docker when the
 files are on a mounted drive. Prefer relative paths to keep projects portable.
 
 While editing, OntoLens checks image references after a short typing pause.
-Missing local files and unsupported formats appear below the editor. **Prüfen**
+Missing local files and unsupported formats appear below the editor. **Check**
 refreshes the image check as well as the chapter check, for example after adding
 a missing file. These notices do not block saving the Markdown. A combined HTML
 build still fails if a referenced local image cannot be copied.
@@ -299,7 +273,7 @@ in the reading view. Inline HTML remains supported by the HTML exporter, but is
 not rendered as HTML in the editor's reading view.
 
 **Ctrl+S** (or **Cmd+S** on macOS) inside the Markdown pane uses the same save
-action as **Speichern**. It does not open the browser's save-page dialog. Existing
+action as **Save**. It does not open the browser's save-page dialog. Existing
 conflict checks and the disabled state of the save button still apply.
 
 The navigation stays in place while the settings column and document preview
@@ -312,7 +286,7 @@ OntoLens supports standard Markdown paragraphs, links, lists, tables, fenced cod
 ````markdown
 ---
 language: en
-title: Example ontology
+title: Library ontology
 description: Concepts, usage, and technical reference in one page.
 ---
 
@@ -320,14 +294,15 @@ description: Concepts, usage, and technical reference in one page.
 
 # Introduction
 
-The class [[ex:Thing|Thing]] is the central concept of this ontology.
+A [[ex:Book|book]] can be linked to its author with [[ex:writtenBy]].
 
 <!-- ontolens:visualization -->
 
 # Usage
 
 ```turtle
-ex:item a ex:Thing .
+@prefix ex: <https://example.org/library#> .
+ex:item a ex:Book ; ex:writtenBy ex:alex .
 ```
 
 <!-- ontolens:used-ontologies -->
@@ -341,4 +316,4 @@ ex:item a ex:Thing .
 <!-- ontolens:cross-reference -->
 ````
 
-The complete German ISOProps example is available at [`examples/isoprops/documentation.de.md`](../examples/isoprops/documentation.de.md).
+This example uses the terms in the [quick-start ontology](../README.md#generate-html-from-the-command-line).

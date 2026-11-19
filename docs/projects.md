@@ -1,44 +1,42 @@
 # Projects and static portals
 
-The original single-file CLI remains available. Project builds use the same
-generator, with YAML configuration and optional portal navigation.
-
-```console
-uv run ontolens build ontolens.example.yaml
-uv run ontolens build ontolens.example.yaml --ontology isoprops
-uv run ontolens build ontolens.example.yaml --ontology loin --ontology tempo --no-portal
-uv run ontolens build ontolens.example.yaml --no-quality-report --recommendations
-```
-
-The supplied YAML refers to local inputs, not bundled datasets. Provide the
-referenced files first or change the paths to your own. With the local demo
-collection it builds LOIN, TempO and ISOProps. ISOProps includes the
-maintained Markdown introduction. The others use standard ontology documentation.
+Use a project when you want repeatable settings or a shared index linking several
+documents. The same configuration works in the CLI and web app. The ontology
+files stay separate; a portal is a collection of documents, not a merged graph.
 
 ## Configuration
 
+For a first build, place `library.yaml` beside the `demo.ttl` from the
+[quick start](../README.md#generate-html-from-the-command-line):
+
 ```yaml
-name: ontology-collection
+name: library-collection
 output: build
 defaults:
-  language: de
-  recommendations: false
+  language: en
   quality_report: true
-  custom_annotations: false
-  check_content: false
 ontologies:
-  - id: loin
-    input: examples/loin/loin.ttl
-  - id: tempo
-    input: examples/tempo/tempo.ttl
-    skip_missing_images: true
-  - id: isoprops
-    input: examples/isoprops/isoprops.ttl
-    content: examples/isoprops/documentation.de.md
-    check_content: true
+  - id: library
+    input: demo.ttl
 portal:
   enabled: true
-  title: LOIN, TempO & ISOProps
+  title: Library ontologies
+```
+
+```sh
+uv run ontolens build library.yaml
+```
+
+Open `index.html` inside the new project bundle. Add another entry to `ontologies`
+for each additional file. Set `content: guide.md` on an entry to use a combined
+document. To see a larger configuration, see [ontolens.example.yaml](../ontolens.example.yaml);
+its LOIN, TempO and ISOProps inputs are local examples, not distributed datasets.
+
+## Settings and overrides
+
+```sh
+uv run ontolens build library.yaml --ontology library --no-portal
+uv run ontolens build library.yaml --no-quality-report --recommendations
 ```
 
 All YAML paths are relative to the configuration file, independent of the current
@@ -90,14 +88,12 @@ inspection. An index is only written after all selected documents succeed.
 ## Output and publication
 
 ```text
-build/<timestamp>_ontology-collection/
+build/<timestamp>_library-collection/
   index.html
-  loin/<timestamp>_loin/
-    loin.html
+  library/<timestamp>_library/
+    library.html
     img/
-    downloads/loin.ttl
-  tempo/<timestamp>_tempo/...
-  isoprops/<timestamp>_isoprops/...
+    downloads/demo.ttl
 ```
 
 Each run creates a new timestamped project bundle. If the same bundle name
@@ -114,8 +110,6 @@ HTML and work offline without an `assets/` folder. External image URLs and links
 remain external, so this is not a complete offline archive. Cross-ontology term search and automatic mappings
 are not included in this first portal version.
 
-TempO references a missing `LibraryOverview.svg`. Its example configuration
-explicitly enables `skip_missing_images`, which warns and omits missing ontology
-figures. The default remains an error, and missing Markdown images still fail.
-The single-file CLI also supports `--skip-missing-images`. Previously shared
-example images are retained as-is; this does not certify their semantic accuracy.
+Use `skip_missing_images: true` to warn and omit missing ontology figures instead
+of failing the build. Missing Markdown images still fail; the single-file CLI
+equivalent is `--skip-missing-images`.
