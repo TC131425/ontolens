@@ -127,5 +127,14 @@ def test_desktop_mode_retains_native_picker(tmp_path, monkeypatch):
     client = TestClient(create_app(config))
     assert client.get('/api/runtime').json()['file_browser'] is False
     assert client.get('/api/files').status_code == 404
-    monkeypatch.setattr('ontolens.web.choose_local_path', lambda *args: str(config))
-    assert client.post('/api/projects/open', headers=HEADERS, json={}).status_code == 200
+    calls = []
+
+    def picker(kind, initial, language):
+        calls.append((kind, language))
+        return str(config)
+
+    monkeypatch.setattr('ontolens.web.choose_local_path', picker)
+    assert client.post('/api/projects/open?ui_language=en', headers=HEADERS, json={}).status_code == 200
+    assert client.post('/api/dialog/input', headers=HEADERS).status_code == 200
+    assert client.post('/api/projects/dialog/directory?ui_language=en', headers=HEADERS).status_code == 200
+    assert calls == [('project', 'en'), ('input', 'de'), ('output', 'en')]

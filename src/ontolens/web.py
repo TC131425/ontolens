@@ -137,7 +137,7 @@ class AddOntologiesRequest(BaseModel):
     copy_sources: StrictBool = True
 
 
-def choose_local_path(kind: str, initial: Path) -> str | list[str] | None:
+def choose_local_path(kind: str, initial: Path, ui_language: str = 'de') -> str | list[str] | None:
     if os.environ.get('ONTOLENS_DATA_ROOT'):
         raise HTTPException(409, 'Bitte den Dateibrowser der Weboberfläche verwenden.')
     # A separate process gives the native dialog its own GUI main thread.
@@ -147,19 +147,21 @@ import sys, json
 root = tk.Tk()
 root.withdraw()
 root.attributes('-topmost', True)
-kind, initial = sys.argv[1:]
+kind, initial, language = sys.argv[1:]
+english = language == 'en'
+ontologies = [('Ontology' if english else 'Ontologie', '*.ttl *.rdf *.owl *.nt *.jsonld *.json-ld')]
 if kind == 'ontologies':
-    result = list(filedialog.askopenfilenames(parent=root, initialdir=initial, title='Ontologien hinzufügen', filetypes=[('Ontologie', '*.ttl *.rdf *.owl *.nt *.jsonld *.json-ld')]))
+    result = list(filedialog.askopenfilenames(parent=root, initialdir=initial, title='Add ontologies' if english else 'Ontologien hinzufügen', filetypes=ontologies))
 elif kind == 'output':
-    result = filedialog.askdirectory(parent=root, initialdir=initial, title='Ausgabeordner auswählen')
+    result = filedialog.askdirectory(parent=root, initialdir=initial, title='Choose folder' if english else 'Ordner auswählen')
 else:
-    types = [('Projekt', '*.yaml *.yml')] if kind == 'project' else [('HTML', '*.html *.htm')] if kind == 'html' else [('Markdown', '*.md *.markdown')] if kind == 'content' else [('Ontologie', '*.ttl *.rdf *.owl *.nt *.jsonld *.json-ld')]
-    result = filedialog.askopenfilename(parent=root, initialdir=initial, title='Datei auswählen', filetypes=types)
+    types = [('Project' if english else 'Projekt', '*.yaml *.yml')] if kind == 'project' else [('HTML', '*.html *.htm')] if kind == 'html' else [('Markdown', '*.md *.markdown')] if kind == 'content' else ontologies
+    result = filedialog.askopenfilename(parent=root, initialdir=initial, title='Choose file' if english else 'Datei auswählen', filetypes=types)
 root.destroy()
 print(json.dumps(result))
 '''
     try:
-        result = subprocess.run([sys.executable, "-c", script, kind, str(initial)], capture_output=True, text=True, timeout=300, check=True)
+        result = subprocess.run([sys.executable, "-c", script, kind, str(initial), ui_language], capture_output=True, text=True, timeout=300, check=True)
         return json.loads(result.stdout) or None
     except (subprocess.SubprocessError, ValueError, OSError) as error:
         raise HTTPException(503, "Lokaler Dateidialog nicht verfügbar oder abgelaufen. Benötigt einen Desktop auf dem Backend-Rechner.") from error
@@ -405,12 +407,12 @@ def create_project_app(config_path: Path | None = None, url_prefix: str = '') ->
             export_lock.release()
 
     @app.post("/api/dialog/{kind}")
-    def choose_path(kind: Literal["input", "content", "output", "html", "ontologies"], x_ontolens_write: str | None = Header(default=None)):
+    def choose_path(kind: Literal["input", "content", "output", "html", "ontologies"], x_ontolens_write: str | None = Header(default=None), ui_language: Literal['de', 'en'] = 'de'):
         require_write(x_ontolens_write)
         if not dialog_lock.acquire(blocking=False):
             raise HTTPException(409, "Ein Dateidialog ist bereits geöffnet.")
         try:
-            return {"path": choose_local_path(kind, config.parent)}
+            return {"path": choose_local_path(kind, config.parent, ui_language)}
         finally:
             dialog_lock.release()
 
@@ -937,7 +939,7 @@ def create_app(config_path: Path | None = None) -> FastAPI:
             return {'removed': project_id, 'files_preserved': True}
 
     @app.post('/api/projects/open')
-    def open_project(x_ontolens_write: str | None = Header(default=None), request: OpenProjectRequest | None = None):
+    def open_project(x_ontolens_write: str | None = Header(default=None), request: OpenProjectRequest | None = None, ui_language: Literal['de', 'en'] = 'de'):
         if x_ontolens_write != '1':
             raise HTTPException(403, 'Missing write header')
         with registry_lock:
@@ -945,7 +947,7 @@ def create_app(config_path: Path | None = None) -> FastAPI:
                 from .deployment import selected_path
                 selected = str(selected_path(request.path))
             else:
-                selected = choose_local_path('project', config.parent)
+                selected = choose_local_path('project', config.parent, ui_language)
             if not selected:
                 return {'project': None}
             try:
@@ -965,11 +967,11 @@ def create_app(config_path: Path | None = None) -> FastAPI:
                 raise HTTPException(422, f'Projekt konnte nicht geöffnet werden: {error}') from error
 
     @app.post('/api/projects/dialog/{kind}')
-    def project_dialog(kind: Literal['directory', 'ontologies'], x_ontolens_write: str | None = Header(default=None)):
+    def project_dialog(kind: Literal['directory', 'ontologies'], x_ontolens_write: str | None = Header(default=None), ui_language: Literal['de', 'en'] = 'de'):
         if x_ontolens_write != '1':
             raise HTTPException(403, 'Missing write header')
         with registry_lock:
-            value = choose_local_path('output' if kind == 'directory' else 'ontologies', config.parent)
+            value = choose_local_path('output' if kind == 'directory' else 'ontologies', config.parent, ui_language)
             return {'path': value} if kind == 'directory' else {'paths': value or []}
 
     @app.post('/api/projects')

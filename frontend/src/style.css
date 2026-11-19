@@ -170,3 +170,5 @@ body { overflow: hidden; }
   .shell > nav { height: auto; max-height: 25dvh; flex-shrink: 0; }
   .workspace { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(220px, .8fr) minmax(600px, 1.2fr); overflow: auto; }
 }
+.ui-language { display: inline-flex; flex-shrink: 0; align-items: center; gap: 5px; color: var(--muted); }
+.ui-language select { font: inherit; font-size: 13px; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px 4px; }

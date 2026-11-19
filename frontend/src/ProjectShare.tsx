@@ -1,9 +1,11 @@
+import { useText } from './uiLanguage';
 import { useEffect, useState } from 'react';
 import { Download, Package } from 'lucide-react';
 import { apiFetch, type Project } from './api';
 import { ProjectPdf } from './ProjectPdf';
 
 export function ProjectShare({project, beforeExport}: {project: Project; beforeExport: () => boolean}) {
+  const t = useText();
   const [includeOutputs, setIncludeOutputs] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -30,16 +32,16 @@ export function ProjectShare({project, beforeExport}: {project: Project; beforeE
     finally {setBusy(false);}
   }
   return <section className="project-membership project-share" aria-labelledby="project-share-heading">
-    <h2 id="project-share-heading">Projekt weitergeben</h2>
+    <h2 id="project-share-heading">{t("Projekt weitergeben")}</h2>
     <label className="copy-source-option"><input type="checkbox" checked={includeOutputs} disabled={busy}
-      onChange={e => setIncludeOutputs(e.target.checked)}/>Generierte Dokumentationen und Portale einschließen</label>
+      onChange={e => setIncludeOutputs(e.target.checked)}/>{t("Generierte Dokumentationen und Portale einschließen")}</label>
     <button className="generate-template membership-add" disabled={busy} onClick={() => void prepare()}>
-      <Package size={18}/>{busy ? 'Projektpaket wird geprüft und erstellt …' : 'Projekt als ZIP exportieren'}</button>
-    {error && <p className="export-error" role="alert">{error}</p>}
-    {!!notices.length && <details className="project-share-notices" open><summary>Exporthinweise ({notices.length})</summary>
-      <ul>{notices.map((notice, index) => <li key={index}>{notice}</li>)}</ul></details>}
+      <Package size={18}/>{busy ? t("Projektpaket wird geprüft und erstellt …") : t("Projekt als ZIP exportieren")}</button>
+    {error && <p className="export-error" role="alert">{t(error)}</p>}
+    {!!notices.length && <details className="project-share-notices" open><summary>{t("Exporthinweise (")}{notices.length})</summary>
+      <ul>{notices.map((notice, index) => <li key={index}>{t(notice)}</li>)}</ul></details>}
     {download && <p role="status"><a className="project-download" href={download.url} download={download.name}>
-      <Download size={18}/>Projekt-ZIP herunterladen</a></p>}
+      <Download size={18}/>{t("Projekt-ZIP herunterladen")}</a></p>}
     <ProjectPdf project={project} beforeExport={beforeExport}/>
   </section>;
 }

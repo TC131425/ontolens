@@ -32,6 +32,8 @@ async function dispatchFetch(path: string, init?: RequestInit): Promise<Response
       const body = opening ? {project: null} : path.includes('/projects/dialog/ontologies') ? {paths: selected || []} : {path: kind === 'ontologies' ? selected : selected?.[0] || null};
       return new Response(JSON.stringify(body), {headers: {'Content-Type': 'application/json'}});
     }
+    const language = document.documentElement.lang === 'en' ? 'en' : 'de';
+    return fetch(path + '?ui_language=' + language, init);
   }
   return fetch(path, init);
 }
@@ -39,7 +41,7 @@ export async function get<T>(path: string, signal?: AbortSignal): Promise<T> {
   const response = await apiFetch(path, { signal });
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(typeof error.detail === 'string' ? error.detail : `API-Fehler (${response.status})`);
+    throw new Error(typeof error.detail === 'string' ? error.detail : `API-Fehler: ${response.status}`);
   }
   return response.json();
 }

@@ -43,14 +43,14 @@ export function markdownLink(url: string, label: string) {
   return `[${text}](<${destination}>)`;
 }
 
-export function markdownTable(columns: number, rows: number) {
+export function markdownTable(columns: number, rows: number, t = (label: string) => label) {
   if (!Number.isInteger(columns) || columns < 1 || columns > 10 || !Number.isInteger(rows) || rows < 1 || rows > 50) {
     throw new Error('Bitte 1 bis 10 Spalten und 1 bis 50 Datenzeilen angeben.');
   }
   const line = (cells: string[]) => `| ${cells.join(' | ')} |`;
-  return [line(Array.from({length: columns}, (_, index) => `Spalte ${index + 1}`)),
+  return [line(Array.from({length: columns}, (_, index) => t('Spalte {n}').replace('{n}', String(index + 1)))),
     line(Array(columns).fill('---')),
-    ...Array.from({length: rows}, () => line(Array(columns).fill('Wert')))].join('\n');
+    ...Array.from({length: rows}, () => line(Array(columns).fill(t('Wert'))))].join('\n');
 }
 
 export function insertMarkdownBlock(text: string, block: string, start = text.length, end = start) {

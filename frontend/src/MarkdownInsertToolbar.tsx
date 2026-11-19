@@ -1,11 +1,13 @@
+import { useText } from './uiLanguage';
 import { useEffect, useRef, useState } from 'react';
 import { ImagePlus, Link2, Table2, X } from 'lucide-react';
 import { markdownImage, markdownLink, markdownSlots, markdownTable, usedMarkdownSlots } from './markdownInsert';
 
 export function MarkdownInsertToolbar({draft, disabled, onInsert, getSelectedText}: {draft: string; disabled: boolean; onInsert: (text: string, inline?: boolean) => void; getSelectedText: () => string}) {
+  const t = useText();
   const [form, setForm] = useState<'image' | 'table' | 'link' | null>(null);
-  const [path, setPath] = useState('figures/abbildung.png');
-  const [alt, setAlt] = useState('Beschreibung der Abbildung');
+  const [path, setPath] = useState(t("figures/abbildung.png"));
+  const [alt, setAlt] = useState(t("Beschreibung der Abbildung"));
   const [columns, setColumns] = useState('3');
   const [rows, setRows] = useState('3');
   const [linkUrl, setLinkUrl] = useState('');
@@ -26,41 +28,41 @@ export function MarkdownInsertToolbar({draft, disabled, onInsert, getSelectedTex
     if (kind === 'link') {setLinkText(getSelectedText());setLinkUrl('');}
     setForm(kind);
   }
-  return <div className="markdown-insert-toolbar" role="group" aria-label="Markdown einfügen">
-    <select aria-label="Abschnitt einfügen" value="" disabled={disabled || complete} title={complete ? 'Alle Abschnitte sind bereits eingefügt' : 'Generierten Abschnitt einfügen'} onChange={event => {
+  return <div className="markdown-insert-toolbar" role="group" aria-label={t("Markdown einfügen")}>
+    <select aria-label={t("Abschnitt einfügen")} value="" disabled={disabled || complete} title={complete ? t("Alle Abschnitte sind bereits eingefügt") : t("Generierten Abschnitt einfügen")} onChange={event => {
       const id = event.target.value;
       if (!used.has(id) && markdownSlots.some(slot => slot.id === id)) onInsert(`<!-- ontolens:${id} -->`);
     }}>
-      <option value="" disabled>{complete ? 'Alle Abschnitte vorhanden' : 'Abschnitt einfügen …'}</option>
-      {markdownSlots.map(slot => <option value={slot.id} disabled={used.has(slot.id)} key={slot.id}>{slot.label}{used.has(slot.id) ? ' (eingefügt)' : ''}</option>)}
+      <option value="" disabled>{complete ? t("Alle Abschnitte vorhanden") : t("Abschnitt einfügen …")}</option>
+      {markdownSlots.map(slot => <option value={slot.id} disabled={used.has(slot.id)} key={slot.id}>{t(slot.label)}{used.has(slot.id) ? " " + t("(eingefügt)") : ''}</option>)}
     </select>
-    <button className="markdown-insert-icon" type="button" disabled={disabled} title="Link einfügen" aria-label="Link einfügen" onClick={() => open('link')}><Link2 size={19}/></button>
-    <button className="markdown-insert-icon" type="button" disabled={disabled} title="Bild einfügen" aria-label="Bild einfügen" onClick={() => open('image')}><ImagePlus size={19}/></button>
-    <button className="markdown-insert-icon" type="button" disabled={disabled} title="Tabelle einfügen" aria-label="Tabelle einfügen" onClick={() => open('table')}><Table2 size={19}/></button>
+    <button className="markdown-insert-icon" type="button" disabled={disabled} title={t("Link einfügen")} aria-label={t("Link einfügen")} onClick={() => open('link')}><Link2 size={19}/></button>
+    <button className="markdown-insert-icon" type="button" disabled={disabled} title={t("Bild einfügen")} aria-label={t("Bild einfügen")} onClick={() => open('image')}><ImagePlus size={19}/></button>
+    <button className="markdown-insert-icon" type="button" disabled={disabled} title={t("Tabelle einfügen")} aria-label={t("Tabelle einfügen")} onClick={() => open('table')}><Table2 size={19}/></button>
     <dialog className="markdown-insert-dialog" ref={dialog} aria-labelledby="markdown-insert-title" onCancel={() => setForm(null)} onClose={() => setForm(null)}>
       <form onSubmit={event => {
         event.preventDefault();
         if (disabled || !form) return;
         try {
-          const block = form === 'image' ? markdownImage(path, alt) : form === 'link' ? markdownLink(linkUrl, linkText) : markdownTable(Number(columns), Number(rows));
+          const block = form === 'image' ? markdownImage(path, alt) : form === 'link' ? markdownLink(linkUrl, linkText) : markdownTable(Number(columns), Number(rows), t);
           dialog.current?.close();
           setForm(null);
           onInsert(block, form === 'link');
         } catch (failure) {setError(failure instanceof Error ? failure.message : 'Einfügen fehlgeschlagen.');}
       }}>
-        <div className="markdown-insert-heading"><h2 id="markdown-insert-title">{form === 'image' ? 'Bild einfügen' : form === 'link' ? 'Link einfügen' : 'Tabelle einfügen'}</h2><button type="button" className="icon" title="Schließen" aria-label="Schließen" onClick={() => setForm(null)}><X size={18}/></button></div>
+        <div className="markdown-insert-heading"><h2 id="markdown-insert-title">{form === 'image' ? t("Bild einfügen") : form === 'link' ? t("Link einfügen") : t("Tabelle einfügen")}</h2><button type="button" className="icon" title={t("Schließen")} aria-label={t("Schließen")} onClick={() => setForm(null)}><X size={18}/></button></div>
         {form === 'link' ? <>
-          <label>Linkziel<input required inputMode="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://example.org"/></label>
-          <label>Linktext<input value={linkText} onChange={event => setLinkText(event.target.value)} placeholder="Bezeichnung"/></label>
+          <label>{t("Linkziel")}<input required inputMode="url" value={linkUrl} onChange={event => setLinkUrl(event.target.value)} placeholder="https://example.org"/></label>
+          <label>{t("Linktext")}<input value={linkText} onChange={event => setLinkText(event.target.value)} placeholder={t("Bezeichnung")}/></label>
         </> : form === 'image' ? <>
-          <label>Bildpfad oder URL<input required value={path} onChange={event => setPath(event.target.value)} placeholder="figures/abbildung.png"/></label>
-          <label>Alternativtext<input value={alt} onChange={event => setAlt(event.target.value)}/></label>
+          <label>{t("Bildpfad oder URL")}<input required value={path} onChange={event => setPath(event.target.value)} placeholder={t("figures/abbildung.png")}/></label>
+          <label>{t("Alternativtext")}<input value={alt} onChange={event => setAlt(event.target.value)}/></label>
         </> : <div className="markdown-table-size">
-          <label>Spalten<input type="number" min="1" max="10" step="1" required value={columns} onChange={event => setColumns(event.target.value)}/></label>
-          <label>Datenzeilen<input type="number" min="1" max="50" step="1" required value={rows} onChange={event => setRows(event.target.value)}/></label>
+          <label>{t("Spalten")}<input type="number" min="1" max="10" step="1" required value={columns} onChange={event => setColumns(event.target.value)}/></label>
+          <label>{t("Datenzeilen")}<input type="number" min="1" max="50" step="1" required value={rows} onChange={event => setRows(event.target.value)}/></label>
         </div>}
-        {error && <p className="markdown-check-error" role="alert">{error}</p>}
-        <div className="markdown-insert-actions"><button type="button" onClick={() => setForm(null)}>Abbrechen</button><button type="submit" className="primary-action" disabled={disabled}>Einfügen</button></div>
+        {error && <p className="markdown-check-error" role="alert">{t(error)}</p>}
+        <div className="markdown-insert-actions"><button type="button" onClick={() => setForm(null)}>{t("Abbrechen")}</button><button type="submit" className="primary-action" disabled={disabled}>{t("Einfügen")}</button></div>
       </form>
     </dialog>
   </div>;

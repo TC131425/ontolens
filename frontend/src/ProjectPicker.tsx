@@ -1,9 +1,11 @@
+import { useText } from './uiLanguage';
 import { useEffect, useState } from 'react';
 import { FolderOpen } from 'lucide-react';
 import { setProjectBase, appFetch } from './api';
 
 type Entry = {id: string; path: string; base: string; name: string; count: number; available: boolean};
 export function ProjectPicker({beforeSwitch, onSwitch, activeId}: {beforeSwitch: () => boolean; onSwitch: (id: string) => void; activeId: string}) {
+  const t = useText();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [selected, setSelected] = useState('');
   const [busy, setBusy] = useState(false);
@@ -40,11 +42,11 @@ export function ProjectPicker({beforeSwitch, onSwitch, activeId}: {beforeSwitch:
     } catch(e) {setError(e instanceof Error ? e.message : 'Öffnen fehlgeschlagen');}
     finally {setBusy(false);}
   }
-  return <div className="project-picker"><label className="sr-only" htmlFor="project-select">Projekt auswählen</label>
+  return <div className="project-picker"><label className="sr-only" htmlFor="project-select">{t("Projekt auswählen")}</label>
     <select id="project-select" title={entries.find(p => p.id === selected)?.path} disabled={busy} value={selected} onChange={e => {const entry = entries.find(p => p.id === e.target.value);if(entry && beforeSwitch()) activate(entry);}}>
-      <option value="" disabled>{entries.length ? 'Projekt auswählen' : 'Keine Projekte'}</option>
-      {entries.map(entry => <option value={entry.id} key={entry.id} disabled={!entry.available}>{entry.name} · {entry.count} Ontologien{entry.available ? '' : ' · Nicht verfügbar'}</option>)}
-    </select><button className="icon" title="Projekt öffnen (YAML)" aria-label="Projekt öffnen" disabled={busy} onClick={open}><FolderOpen size={18}/></button>
-    {error && <span className="project-picker-error" role="alert">{error}</span>}
+      <option value="" disabled>{entries.length ? t("Projekt auswählen") : t("Keine Projekte")}</option>
+      {entries.map(entry => <option value={entry.id} key={entry.id} disabled={!entry.available}>{entry.name} · {entry.count} {t(entry.count === 1 ? "Ontologie" : "Ontologien")}{entry.available ? '' : " " + t("· Nicht verfügbar")}</option>)}
+    </select><button className="icon" title={t("Projekt öffnen (YAML)")} aria-label={t("Projekt öffnen")} disabled={busy} onClick={open}><FolderOpen size={18}/></button>
+    {error && <span className="project-picker-error" role="alert">{t(error)}</span>}
   </div>;
 }
