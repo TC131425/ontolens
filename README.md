@@ -19,51 +19,52 @@ positions as populated fields rather than being appended at the bottom.
 
 ## Installation
 
-### Projekt weitergeben
+### Share a project
 
-In den **Projekteinstellungen → Projekt weitergeben** lässt sich ein portables
-Projekt-ZIP erstellen. Konfiguration, Ontologien, lokale Bilder und zugeordnetes
-Markdown sind enthalten; aktuell verknüpfte HTML-Dokumentationen und Portale
-können optional mitgenommen werden. Das Arbeitsprojekt bleibt unverändert.
-Details und Grenzen: [Projekt-ZIP](docs/project-export.md).
+Open **Projekteinstellungen** and go to **Projekt weitergeben** to create a
+portable ZIP. It includes the project configuration, ontologies, local images
+and linked Markdown files. You can also include linked HTML documents and
+portals. Exporting leaves the original project unchanged. See the
+[project ZIP guide (in German)](docs/project-export.md) for details and limitations.
 
-Im selben Bereich bietet **Dokumentation als PDF** den Export vorhandener
-HTML-Dokumentationen an: A4/A3, optionale Abbildungen und Graph, immer mit hellem
-Drucklayout. Mehrere Dokumente werden als ZIP mit einzelnen PDFs heruntergeladen.
-Docker enthält den Renderer; lokal ist das Extra `pdf` samt Chromium erforderlich.
-Siehe [PDF-Export](docs/pdf-export.md).
+In the same section, use **Dokumentation als PDF** to export existing HTML
+documents as PDFs. Choose A4 or A3 and whether to include figures and the
+ontology graph. PDFs always use a light print layout. Select multiple documents
+to download one ZIP containing a separate PDF for each. The Docker image
+includes the renderer; a local installation needs the `pdf` extra and Chromium.
+See the [PDF export guide (in German)](docs/pdf-export.md).
 
 ```console
-uv run ontolens pack projects/mein-projekt.yaml -o build/mein-projekt.zip
-uv run ontolens pack projects/mein-projekt.yaml -o build/mein-projekt.zip --include-outputs
+uv run ontolens pack projects/my-project.yaml -o build/my-project.zip
+uv run ontolens pack projects/my-project.yaml -o build/my-project.zip --include-outputs
 ```
 
-### Docker (lokale Anwendung)
+### Run locally with Docker
 
-Vor dem ersten Start das lokale Laufwerk in `.env` einstellen, beispielsweise
-`ONTOLENS_HOST_DIR=D:/`. Ohne Einstellung verwendet Compose `C:/`.
-Der Dateibrowser funktioniert auch in Firefox und schreibt direkt auf das
-eingebundene Laufwerk. Details: [Docker und lokale Laufwerke](docs/docker.md#lokales-laufwerk-einstellen).
+Before the first start, copy `.env.example` to `.env` and set
+`ONTOLENS_HOST_DIR` to the drive or directory you want OntoLens to access.
+For example, use `D:/` on Windows. If the variable is unset, Compose defaults
+to `C:/`. See [how to configure the host drive (in German)](docs/docker.md#lokales-laufwerk-einstellen).
 
-Docker Desktop mit Linux-Engine starten, dann im Projektordner:
+Start Docker Desktop with the Linux engine, then run this from the project root:
 
 ```console
 docker compose up --build -d
 ```
 
-Oberfläche: **http://localhost:8080**. Projekte/Quellen/Exporte bleiben unter
-`docker-data/` auf dem Host. Die Dateiauswahl erfolgt im Containerbetrieb über
-einen Browser für diesen eingebundenen Ordner. Daten zuerst dorthin kopieren,
-einschließlich referenzierter Bilder. Port und Datenordner sind über `.env`
-konfigurierbar; Vorlage: `.env.example`.
+Open [OntoLens](http://localhost:8080). In the file browser, select **Lokales Laufwerk**
+to open and save files directly on the mounted drive, including in Firefox.
+Alternatively, place your source files and any referenced images in `docker-data/`,
+the default data directory on the host. Projects and exports saved there persist
+when the container stops. You can change the port and data directory in `.env`.
 
-Die vollständige [Docker-Anleitung](docs/docker.md) beschreibt Projektübernahme,
-Dateiauswahl, Updates, Backups, CLI-Nutzung, Linux-Rechte und Grenzen. Image-Build,
-Containerstart und Exportworkflow wurden mit Docker Desktop geprüft; ein
-wiederholbarer Smoke-Test ist dort beschrieben. Diese lokale Anwendung hat keine Anmeldung und darf nicht ungeschützt
-öffentlich bereitgestellt werden.
+The [Docker guide (in German)](docs/docker.md) covers opening existing projects,
+file selection, updates, backups, CLI usage, Linux permissions and limitations.
+It also explains how to test the image build, container startup and export
+workflow on Docker Desktop. OntoLens has no sign-in: do not expose it to the
+public internet without access controls.
 
-### Lokale Python-/React-Installation
+### Local Python and React setup
 
 The initial React/FastAPI application is available alongside the CLI. See
 [Local web development](docs/web-development.md) for setup and current scope.
@@ -93,8 +94,9 @@ Without a saved report the table shows **Noch nicht geprüft** instead of a clea
 result. Existing saved reports are also included after reopening a project.
 See the [workflow audit and CLI/GUI comparison](docs/workflow-audit.md) for tested
 workflows and remaining interface features.
-Under **Portal** in the workspace navigation, select ontologies and a title on the left, then use **Portal
-generieren** to build a shared documentation portal with preview and ZIP download.
+Under **Portal** in the workspace navigation, select the ontologies and enter
+a title on the left. Use **Portal generieren** to build the portal, preview it
+and download it as a ZIP.
 The last successful portal remains available after reopening the project.
 Before generating, choose **Hell**, **Dunkel**, or **Beide** for HTML, combined
 documentation and portals. CLI: `--theme light`, `--theme dark`, `--theme both`.
@@ -258,8 +260,8 @@ uv run ontolens build ontolens.example.yaml --show-missing-endpoints
 
 The default is off. Project YAML supports `show_missing_endpoints: true` in
 `defaults` or an ontology entry; project builds also accept
-`--no-show-missing-endpoints`. The GUI offers **Platzhalter für fehlende Domain/Range
-im Graphen** in the HTML options. Regenerate existing HTML to apply the change.
+`--no-show-missing-endpoints`. In the HTML options, select
+**Platzhalter für fehlende Domain/Range im Graphen**. Regenerate existing HTML to apply the change.
 
 Object-property connections also include named domain/range classes referenced
 from external ontologies, even without a class declaration in the input file.
